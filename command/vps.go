@@ -39,6 +39,31 @@ const (
 	StatusUnknown       = 99
 )
 
+func (s ServerStatus) String() string {
+	switch s {
+	case StatusRunning:
+		return "Running"
+		//return "稼働中"
+	case StatusOffline:
+		return "Offline"
+		//return "停止"
+	case StatusInUse:
+		return "No status"
+		//return "取得中"
+	case StatusInFormulation:
+		return "Preparing"
+		//return "サービス準備中"
+	case StatusNoinformation:
+		return "-"
+		//return "未取得"
+	case StatusUnknown:
+		fallthrough
+	default:
+		return "Unknown"
+		//return "不明"
+	}
+}
+
 // 単一VPSを表す構造体
 // ServiceStatusとServerStatusは別物であることに注意
 type Vm struct {
