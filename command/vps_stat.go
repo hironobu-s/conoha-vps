@@ -38,25 +38,12 @@ func (cmd *VpsStat) parseFlag() error {
 
 	if cmd.vmId == "" {
 		// コマンドライン引数で指定されていない場合は、標準入力から受け付ける
-		if err := cmd.scanf(); err != nil {
+		vm, err := cmd.Vps.vpsSelectMenu()
+		if err != nil {
 			return err
 		}
+		cmd.vmId = vm.Id
 	}
-	return nil
-}
-
-// 標準入力からVpsIdを読み込む
-func (cmd *VpsStat) scanf() error {
-	var n int
-	var err error
-
-	println("Please enter VPS-ID or Label in order to get the status.")
-	print("ID or Label: ")
-	n, err = fmt.Scanf("%s", &cmd.vmId)
-	if n != 1 || err != nil {
-		return err
-	}
-
 	return nil
 }
 
