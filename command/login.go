@@ -15,20 +15,20 @@ import (
 	"strings"
 )
 
-func NewAuth() *Auth {
-	return &Auth{
+func NewLogin() *Login {
+	return &Login{
 		Command: NewCommand(),
 	}
 }
 
-type Auth struct {
+type Login struct {
 	account  string
 	password string
 
 	*Command
 }
 
-func (cmd *Auth) parseFlag() error {
+func (cmd *Login) parseFlag() error {
 
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
 
@@ -48,7 +48,7 @@ func (cmd *Auth) parseFlag() error {
 	return nil
 }
 
-func (cmd *Auth) Run() error {
+func (cmd *Login) Run() error {
 	log := lib.GetLogInstance()
 
 	var err error
@@ -59,7 +59,7 @@ func (cmd *Auth) Run() error {
 	cmd.config.Account = cmd.account
 	cmd.config.Password = cmd.password
 
-	loggedIn, err := cmd.Auth()
+	loggedIn, err := cmd.Login()
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (cmd *Auth) Run() error {
 }
 
 // 認証を実行してログイン状態を返す
-func (cmd *Auth) Auth() (loggedIn bool, err error) {
+func (cmd *Login) Login() (loggedIn bool, err error) {
 	var act *cpanel.Action
 
 	act = &cpanel.Action{
@@ -99,7 +99,7 @@ func (cmd *Auth) Auth() (loggedIn bool, err error) {
 }
 
 // 標準入力からアカウントとパスワードを読み込む
-func (cmd *Auth) inputAccountInfo() error {
+func (cmd *Login) inputAccountInfo() error {
 	var n int
 	var err error
 
@@ -165,7 +165,7 @@ func (r *loginDoResult) Populate(resp *http.Response, doc *goquery.Document) err
 
 // ログイン状態を返す。ログインしていればtrue していなければfalseが返る。
 // トップページを取得して、ヘッダー部にアカウントが含まれているかをチェックする
-func (cmd *Auth) LoggedIn() (loggedIn bool, err error) {
+func (cmd *Login) LoggedIn() (loggedIn bool, err error) {
 
 	r := &loggedInResult{}
 	act := &cpanel.Action{
