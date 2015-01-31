@@ -30,12 +30,18 @@ func (cmd *Ssh) parseFlag() error {
 	fs.Parse(os.Args[1:])
 
 	if len(fs.Args()) < 2 {
-		return errors.New("not enough arguments.")
-	}
+		vm, err := cmd.Vps.vpsSelectMenu()
+		if err != nil {
+			return err
+		}
 
-	// 接続先のVmのID
-	cmd.vmId = os.Args[2]
-	cmd.sshOptions = os.Args[3:]
+		cmd.vmId = vm.Id
+
+	} else {
+		// 接続先のVmのID
+		cmd.vmId = os.Args[2]
+		cmd.sshOptions = os.Args[3:]
+	}
 
 	return nil
 }
@@ -67,13 +73,7 @@ func (cmd *Ssh) Run() error {
 func (cmd *Ssh) Connect(host string, user string, args []string) {
 
 	options := []string{
-		// "-o", "IdentitiesOnly=yes",
-		// "-o", "StrictHostKeyChecking=no",
-		// "-o", "UserKnownHostsFile=/dev/null",
-		// "-o", "LogLevel=quiet", // suppress "Warning: Permanently added '[localhost]:2022' (ECDSA) to the list of known hosts."
-		//"-p", fmt.Sprintf("%d", m.GetSSHPort()),
-		//"-i", B2D.SSHKey,
-		"root@157.7.73.28",
+		user + "@" + host,
 	}
 
 	options = append(options, args...)
