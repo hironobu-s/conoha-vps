@@ -62,11 +62,27 @@ func (cmd *VpsList) Run() error {
 		}
 	}
 
-	format := "%s\t%-" + strconv.Itoa(maxLabel) + "s\t%-" + strconv.Itoa(maxPlan) + "s\t%s\t%s\n"
+	format := "%s\t%-" + strconv.Itoa(maxLabel) + "s\t%-" + strconv.Itoa(maxPlan) + "s\t%-15s\t%-20s\t%s\n"
 
-	fmt.Printf(format, "VPS ID           ", "Label", "Plan", "CreatedAt          ", "ServerStatus")
+	fmt.Printf(
+		format,
+		"VPS ID           ",
+		"Label",
+		"Plan",
+		"Server Status",
+		"Service Status",
+		"CreatedAt",
+	)
 	for _, vm := range servers {
-		fmt.Printf(format, vm.Id, vm.Label, vm.Plan, vm.CreatedAt.Format("2006/01/02 15:04 MST"), vm.ServerStatus)
+		fmt.Printf(
+			format,
+			vm.Id,
+			vm.Label,
+			vm.Plan,
+			vm.ServerStatus,
+			vm.ServiceStatus,
+			vm.CreatedAt.Format("2006/01/02 15:04 MST"),
+		)
 	}
 	return nil
 }
