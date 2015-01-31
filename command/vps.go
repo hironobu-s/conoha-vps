@@ -8,12 +8,22 @@ import (
 	"time"
 )
 
+func NewVps() *Vps {
+	return &Vps{
+		Command: NewCommand(),
+	}
+}
+
 type Vps struct {
 	info *VpsAddInformation
 	*Command
 }
 
 func (cmd *Vps) parseFlag() error {
+	return nil
+}
+
+func (cmd *Vps) Run() error {
 	return nil
 }
 
