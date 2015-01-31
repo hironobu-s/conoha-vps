@@ -45,7 +45,8 @@ func (cmd *Vps) SshKey() (PrivateKey, error) {
 	var vm *Vm
 	var err error
 
-	servers, err := cmd.List(false)
+	vpsList := NewVpsList()
+	servers, err := vpsList.List(false)
 	if err != nil {
 		return "", err
 	}
