@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/Sirupsen/logrus"
-	"os"
 	"sort"
 )
 
