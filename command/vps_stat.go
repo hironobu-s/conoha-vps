@@ -215,7 +215,7 @@ func (r *statResult) Populate(resp *http.Response, doc *goquery.Document) error 
 		return err
 	}
 
-	if err = r.populateUploadHost(doc); err != nil {
+	if err = r.populateUploadHosts(doc); err != nil {
 		return err
 	}
 	return nil
@@ -241,7 +241,7 @@ func (r *statResult) populateDate(doc *goquery.Document) error {
 		}
 		r.vm.CreatedAt = date
 	} else if matches[0][1] == "" {
-		// 日付が空欄。何もしない
+		// 日付が未定。何もしない
 	} else {
 		// パースエラー
 		return errors.New("Parse error. Can't detect CreatedAt.")
@@ -259,7 +259,7 @@ func (r *statResult) populateDate(doc *goquery.Document) error {
 			r.vm.DeleteDate = date
 		}
 	} else if matches[0][1] == "" {
-		// 日付が空欄。何もしない
+		// 日付が未定。何もしない
 	} else {
 		// パースエラー
 		return errors.New("Parse error. Can't detect DeleteDate.")
@@ -267,18 +267,26 @@ func (r *statResult) populateDate(doc *goquery.Document) error {
 	return nil
 }
 
-func (r *statResult) populateUploadHost(doc *goquery.Document) error {
+func (r *statResult) populateUploadHosts(doc *goquery.Document) error {
 	// ISOアップロード先とシリアルコンソール接続先
 	body := doc.Find("DL.listStyle01").Text()
 	reg := regexp.MustCompile("Connect to: (.+)/")
 
 	matches := reg.FindAllStringSubmatch(body, -1)
-	if len(matches) != 2 || len(matches[0]) != 2 || len(matches[1]) != 2 {
+	if len(matches) == 0 {
 		// パースエラー
 		return errors.New("Parse error. Can't detect ISO upload host or serial console host.")
 	}
 
-	r.vm.SerialConsoleHost = matches[0][1]
-	r.vm.IsoUploadHost = matches[1][1]
+	for i := 0; i < len(matches); i++ {
+		if strings.Index(matches[i][1], "console") >= 0 {
+			r.vm.SerialConsoleHost = matches[i][1]
+		} else if strings.Index(matches[i][1], "sftp") >= 0 {
+			r.vm.IsoUploadHost = matches[i][1]
+		} else {
+			// パースエラー
+			return errors.New("Parse error. Can't detect ISO upload host or serial console host.")
+		}
+	}
 	return nil
 }
