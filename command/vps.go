@@ -1,6 +1,9 @@
 package command
 
 import (
+	"errors"
+	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -92,4 +95,52 @@ type Vm struct {
 	CommonServerId    string
 	SerialConsoleHost string
 	IsoUploadHost     string
+}
+
+// VPSを選択する
+func (cmd *Vps) vpsSelectMenu() (*Vm, error) {
+	var err error
+
+	// VPS一覧
+	vpsList := NewVpsList()
+	servers, err := vpsList.List(false)
+	if err != nil {
+		return nil, err
+	}
+
+	// VPSが一つの場合はそれを返す
+	if len(servers) == 1 {
+		var vm *Vm
+		for _, vm = range servers {
+			break
+		}
+		return vm, nil
+
+	} else {
+		var i int
+		ids := map[int]string{}
+		for i, vm := range servers {
+			fmt.Printf("[%d] %s\n", i+1, vm.Label)
+			ids[i] = vm.Id
+			i++
+		}
+
+		fmt.Printf("Please select VPS no. [1-%d]: ", len(servers))
+
+		var no string
+		if _, err = fmt.Scanf("%s", &no); err != nil {
+			return nil, err
+		}
+
+		i, err = strconv.Atoi(no)
+		if err != nil {
+			return nil, err
+
+		} else if 1 <= i && i <= len(servers) {
+			return servers[i-1], nil
+
+		} else {
+			return nil, errors.New("Invalid input(out of range).")
+		}
+	}
 }
