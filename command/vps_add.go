@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hironobu-s/conoha-vps/cpanel"
+	flag "github.com/ogier/pflag"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -59,6 +61,31 @@ type VpsAddInformation struct {
 	SshKeyId string
 }
 
+func (i *VpsAddInformation) Validate() error {
+	if i.PlanType != PlanTypeBasic && i.PlanType != PlanTypeWindows {
+		return errors.New("Invalid PlanType.")
+	}
+
+	if i.Plan != Plan1G &&
+		i.Plan != Plan1G &&
+		i.Plan != Plan2G &&
+		i.Plan != Plan4G &&
+		i.Plan != Plan8G &&
+		i.Plan != Plan16G {
+		return errors.New("Invalid Plan.")
+	}
+
+	if i.Template != TemplateDefault1 && i.Template != TemplateDefault2 {
+		return errors.New("Invalid Template.")
+	}
+
+	// 標準プランはrootパスワード必須
+	if i.PlanType == PlanTypeBasic && i.RootPassword == "" {
+		return errors.New("Root password is required.")
+	}
+	return nil
+}
+
 type VpsPlan struct {
 	label  string
 	planId string
@@ -66,25 +93,124 @@ type VpsPlan struct {
 
 type VpsAdd struct {
 	*Vps
+	info *VpsAddInformation
 }
 
 func NewVpsAdd() *VpsAdd {
 	return &VpsAdd{
-		Vps: NewVps(),
+		Vps:  NewVps(),
+		info: &VpsAddInformation{},
 	}
 }
 
-func (cmd *Vps) Add(info *VpsAddInformation) error {
+func (cmd *VpsAdd) parseFlag() error {
+	var help bool
+	var plantype, root string
+	var plan, template int
 
-	if info.PlanType != PlanTypeBasic && info.PlanType != PlanTypeWindows {
-		return errors.New("Undefined plan type.")
+	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+	fs.Usage = cmd.Usage
+
+	fs.BoolVarP(&help, "help", "h", false, "help")
+	fs.StringVarP(&plantype, "plantype", "t", "basic", "")
+	fs.IntVarP(&plan, "plan", "n", -1, "")
+	fs.IntVarP(&template, "image", "i", 1, "")
+	fs.StringVarP(&root, "password", "p", "", "")
+
+	fs.Parse(os.Args[1:])
+
+	// --------------
+
+	if help {
+		fs.Usage()
+		return errors.New("")
 	}
 
-	if 1 <= info.Plan && info.Plan <= 5 {
-		// OK
+	if plantype == "basic" {
+		cmd.info.PlanType = PlanTypeBasic
+	} else if plantype == "windows" {
+		cmd.info.PlanType = PlanTypeWindows
 	} else {
-		return errors.New("Undefined plan.")
+		fs.Usage()
+		return errors.New(`PlanType(-t) parameter must be "basic" or "windows".`)
 	}
+
+	if plan == 1 {
+		cmd.info.Plan = Plan1G
+	} else if plan == 2 {
+		cmd.info.Plan = Plan2G
+	} else if plan == 4 {
+		cmd.info.Plan = Plan4G
+	} else if plan == 8 {
+		cmd.info.Plan = Plan8G
+	} else if plan == 16 {
+		cmd.info.Plan = Plan16G
+	} else {
+		fs.Usage()
+		return errors.New("Plan(-p) is invalid.")
+	}
+
+	if template == 1 {
+		cmd.info.Template = TemplateDefault1
+	} else if template == 2 {
+		cmd.info.Template = TemplateDefault2
+	} else {
+		fs.Usage()
+		return errors.New("Template Image(-i) is invalid.")
+	}
+
+	cmd.info.RootPassword = root
+
+	if err := cmd.info.Validate(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cd *VpsAdd) Usage() {
+	fmt.Println(`Usage: conoha add [OPTIONS]
+
+DESCRIPTION
+    Add VPS to your account.
+
+OPTIONS
+    -n: --plan:     VPS Plan.
+                    It allow only numeric(1=1G, 2=2G ... 16=16G).
+
+    -p: --password  Root password(Standard plan only).
+
+    -t, --type:     (Optional) VPS Category.
+                    Is should be "basic" or "windows". If not set, it will set "basic".
+
+    -i: --template: (Optional) Template image number.
+                    If not set, it will set 1.
+                     
+Example
+    Standard Plan, 2vCPU, 1GB Memory and CentOS6.5.
+        conoha add -t basic -p 1 -i 1
+
+    Standard Plan, 4vCPU, 4GB Memory and CentOS6.5 + nginx + WordPress.
+        conoha add -t basic -p 4 -i 2
+
+    Windows Plan, 8vCPU, 8GB Memory and Windows Server 2012 R2
+        conoha add -t windows -p 8 -i 1
+
+    Windows Plan, 16vCPU, 16GB Memory and Windows Server 2008 R2
+        conoha add -t windows -p 16 -i 2
+`)
+}
+
+func (cmd *VpsAdd) Run() error {
+	var err error
+	if err = cmd.parseFlag(); err != nil {
+		return err
+	}
+
+	return cmd.Add(cmd.info)
+}
+
+func (cmd *Vps) Add(info *VpsAddInformation) error {
 
 	var act *cpanel.Action
 	act = &cpanel.Action{
@@ -112,24 +238,6 @@ func (cmd *Vps) Add(info *VpsAddInformation) error {
 	if err := cmd.browser.Run(); err != nil {
 		return err
 	}
-	return nil
-
-	// VPS追加を実行
-	// var err error
-	// err = v.addFormPrepare(info)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// err = v.addFormConfirm(info)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// err = v.addFormSubmit(info)
-	// if err != nil {
-	// 	return err
-	// }
 	return nil
 }
 
