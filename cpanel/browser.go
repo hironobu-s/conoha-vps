@@ -5,7 +5,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"net/http/cookiejar"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 )
@@ -66,8 +65,8 @@ func (act *Action) Run(bi *BrowserInfo) (err error) {
 	//_, _ = ioutil.ReadAll(resp.Body)
 	//println(string(body))
 
-	dump, _ := httputil.DumpRequest(req, true)
-	println(string(dump))
+	// dump, _ := httputil.DumpRequest(req, true)
+	// println(string(dump))
 
 	// if req.URL.String() == "https://cp.conoha.jp/Service/VPS/Del/Confirm.aspx" && req.Method == "POST" {
 	// 	dump, _ = httputil.DumpResponse(resp, true)
