@@ -113,6 +113,7 @@ func (act Action) hiddenParams(doc *goquery.Document) url.Values {
 
 		values.Add(name, value)
 	}
+
 	return values
 }
 
@@ -135,9 +136,10 @@ type BrowserInfo struct {
 
 func (b *BrowserInfo) InitializeDefault() {
 	b.headers = map[string]string{
-		"User-Agent":      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:34.0) Gecko/20100101 Firefox/34.0",
-		"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-		"Accept-Language": "ja,en-us;q=0.7,en;q=0.3",
+		"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:34.0) Gecko/20100101 Firefox/34.0",
+		"Accept":     "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+		//"Accept-Language": "ja,en-us;q=0.7,en;q=0.3",
+		"Accept-Language": "en-US,en;q=0.8,ja;q=0.6",
 	}
 	b.Values = url.Values{}
 	b.cookiejar, _ = cookiejar.New(nil)
