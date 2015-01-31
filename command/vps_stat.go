@@ -31,18 +31,20 @@ func (cmd *VpsStat) parseFlag() error {
 
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
 
-	fs.StringVarP(&cmd.vmId, "id", "i", "", "VPS-ID or Label")
 	fs.BoolVarP(&cmd.incIPv6, "include-ipv6", "v", false, "Including IPv6 informations.")
 
 	fs.Parse(os.Args[1:])
 
-	if cmd.vmId == "" {
+	if len(fs.Args()) < 2 {
 		// コマンドライン引数で指定されていない場合は、標準入力から受け付ける
 		vm, err := cmd.Vps.vpsSelectMenu()
 		if err != nil {
 			return err
 		}
 		cmd.vmId = vm.Id
+
+	} else {
+		cmd.vmId = os.Args[2]
 	}
 	return nil
 }
