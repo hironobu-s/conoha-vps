@@ -5,19 +5,84 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hironobu-s/conoha-vps/cpanel"
+	flag "github.com/ogier/pflag"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 )
 
+type VpsStat struct {
+	*Vps
+	vmId string
+}
+
+func NewVpsStat() *VpsStat {
+	return &VpsStat{
+		Vps: NewVps(),
+	}
+}
+
+func (cmd *VpsStat) parseFlag() error {
+
+	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+
+	fs.StringVarP(&cmd.vmId, "id", "i", "", "VPS-ID or Label")
+
+	fs.Parse(os.Args[1:])
+
+	if cmd.vmId == "" {
+		// コマンドライン引数で指定されていない場合は、標準入力から受け付ける
+		if err := cmd.scanf(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// 標準入力からVpsIdを読み込む
+func (cmd *VpsStat) scanf() error {
+	var n int
+	var err error
+
+	println("Please enter VPS-ID or Label in order to get the status.")
+	print("ID or Label: ")
+	n, err = fmt.Scanf("%s", &cmd.vmId)
+	if n != 1 || err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cmd *VpsStat) Run() error {
+	var err error
+	if err = cmd.parseFlag(); err != nil {
+		return err
+	}
+
+	vm, err := cmd.Stat(cmd.vmId)
+	if err != nil {
+		return err
+	}
+
+	print(vm)
+	return nil
+}
+
 // Vmの詳細を取得する
-func (cmd *Vps) Stat(vmId string) (*Vm, error) {
+func (cmd *VpsStat) Stat(vmId string) (*Vm, error) {
 	vpsList := NewVpsList()
 	vm := vpsList.Vm(vmId)
 	if vm == nil {
-		msg := fmt.Sprintf("VPS not found(id=%s).", vmId)
+		var msg string
+		if vmId == "" {
+			msg = fmt.Sprintf("VPS not found.")
+		} else {
+			msg = fmt.Sprintf("VPS not found(id=%s).", vmId)
+		}
 		return nil, errors.New(msg)
 	}
 
@@ -135,11 +200,16 @@ func (r *statResult) populateDate(doc *goquery.Document) error {
 	reg = regexp.MustCompile("利用開始日:([0-9/]*)")
 	matches = reg.FindAllStringSubmatch(body, -1)
 
-	date, err = time.Parse("2006/01/02 MST", matches[0][1]+" JST")
-	if err != nil {
-		return err
+	if len(matches) > 0 && len(matches[0]) > 1 {
+		date, err = time.Parse("2006/01/02 MST", matches[0][1]+" JST")
+		if err != nil {
+			return err
+		}
+		r.vm.CreatedAt = date
+	} else {
+		// パースエラー
+		return errors.New("Parse error. Can't detect CreatedAt.")
 	}
-	r.vm.CreatedAt = date
 
 	// 削除予定日
 	body = doc.Find("#subCtrlBoxNav .endData").Text()
@@ -147,9 +217,14 @@ func (r *statResult) populateDate(doc *goquery.Document) error {
 	reg = regexp.MustCompile("削除予定日:([0-9/]*)")
 	matches = reg.FindAllStringSubmatch(body, -1)
 
-	date, err = time.Parse("2006/01/02 MST", matches[0][1]+" JST")
-	if err == nil {
-		r.vm.DeleteDate = date
+	if len(matches) > 0 && len(matches[0]) > 1 {
+		date, err = time.Parse("2006/01/02 MST", matches[0][1]+" JST")
+		if err == nil {
+			r.vm.DeleteDate = date
+		}
+	} else {
+		// パースエラー
+		return errors.New("Parse error. Can't detect DeleteDate.")
 	}
 	return nil
 }
