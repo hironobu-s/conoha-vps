@@ -14,7 +14,8 @@ import (
 
 // Vmの詳細を取得する
 func (cmd *Vps) Stat(vmId string) (*Vm, error) {
-	vm := cmd.Vm(vmId)
+	vpsList := NewVpsList()
+	vm := vpsList.Vm(vmId)
 	if vm == nil {
 		msg := fmt.Sprintf("VPS not found(id=%s).", vmId)
 		return nil, errors.New(msg)

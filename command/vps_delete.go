@@ -13,9 +13,20 @@ import (
 	"strings"
 )
 
-func (cmd *Vps) Delete(vmId string) error {
+type VpsDelete struct {
+	*Vps
+}
+
+func NewVpsDelete() *VpsDelete {
+	return &VpsDelete{
+		Vps: NewVps(),
+	}
+}
+
+func (cmd *VpsDelete) Delete(vmId string) error {
 	// 削除対象のVMを特定する
-	vm := cmd.Vm(vmId)
+	vpsList := NewVpsList()
+	vm := vpsList.Vm(vmId)
 	if vm == nil {
 		msg := fmt.Sprintf("VPS not found(id=%s).", vmId)
 		return errors.New(msg)
