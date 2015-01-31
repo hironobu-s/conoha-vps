@@ -2,6 +2,8 @@ package command
 
 import (
 	"github.com/hironobu-s/conoha-vps/cpanel"
+	"github.com/hironobu-s/conoha-vps/lib"
+	flag "github.com/ogier/pflag"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -10,6 +12,50 @@ import (
 )
 
 type PrivateKey string
+
+type SshKey struct {
+	*Vps
+	destPath string
+}
+
+func NewSshKey() *SshKey {
+	return &SshKey{
+		Vps: NewVps(),
+	}
+}
+
+func (cmd *SshKey) parseFlag() error {
+
+	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+
+	fs.StringVarP(&cmd.destPath, "path", "p", "", `Path of SSH Key File. (default is "conoha-{AccountID}.key"`)
+
+	fs.Parse(os.Args[1:])
+
+	if cmd.destPath == "" {
+		// デフォルト
+		cmd.destPath = "conoha-" + cmd.config.Account + ".key"
+	}
+
+	return nil
+}
+
+func (cmd *SshKey) Run() error {
+	log := lib.GetLogInstance()
+
+	var err error
+	if err = cmd.parseFlag(); err != nil {
+		return err
+	}
+
+	err = cmd.DownloadSshKey(cmd.destPath)
+	if err == nil {
+		log.Infof(`Download is complete. A private key is stored in "%s".`, cmd.destPath)
+		return nil
+	} else {
+		return err
+	}
+}
 
 // SSH秘密鍵をダウンロードする
 func (cmd *Vps) DownloadSshKey(destPath string) error {
