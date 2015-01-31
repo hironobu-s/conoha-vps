@@ -6,17 +6,74 @@ package command
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hironobu-s/conoha-vps/cpanel"
+	flag "github.com/ogier/pflag"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
+type VpsList struct {
+	*Vps
+	verbose bool
+}
+
+func NewVpsList() *VpsList {
+	return &VpsList{
+		Vps: NewVps(),
+	}
+}
+
+func (cmd *VpsList) parseFlag() error {
+	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+	fs.BoolVarP(&cmd.verbose, "Verbose", "v", false, "Verbose output.")
+
+	fs.Parse(os.Args[1:])
+
+	return nil
+}
+
+func (cmd *VpsList) Run() error {
+	var err error
+
+	if err = cmd.parseFlag(); err != nil {
+		return err
+	}
+
+	var servers map[string]*Vm
+	servers, err = cmd.List(cmd.verbose)
+	if err != nil {
+		return err
+	}
+
+	var maxPlan int = 10
+	var maxLabel int = 10
+	for _, vm := range servers {
+		if len(vm.Label) > maxLabel {
+			maxLabel = len(vm.Label)
+		}
+		if len(vm.Plan) > maxPlan {
+			maxPlan = len(vm.Plan)
+		}
+	}
+
+	format := "%s\t%-" + strconv.Itoa(maxLabel) + "s\t%-" + strconv.Itoa(maxPlan) + "s\t%s\t%s\n"
+
+	fmt.Printf(format, "VPS ID           ", "Label", "Plan", "CreatedAt          ", "ServerStatus")
+	for _, vm := range servers {
+		fmt.Printf(format, vm.Id, vm.Label, vm.Plan, vm.CreatedAt.Format("2006/01/02 15:04 MST"), vm.ServerStatus)
+	}
+	return nil
+}
+
 // Vmを取得する
 // 引数のIDのVmが見つかった場合はその構造体を、見つからない場合はnilを返す。
-func (cmd *Vps) Vm(vmId string) *Vm {
+func (cmd *VpsList) Vm(vmId string) *Vm {
 	var target *Vm
 
 	servers, err := cmd.List(false)
@@ -35,7 +92,7 @@ func (cmd *Vps) Vm(vmId string) *Vm {
 
 // VPSの一覧を取得して、IDをキー、Vm構造体のポインタを値としたスライスを返す
 // 引数のdeepCrawlをtrueにすると、VMのステータスも取得する
-func (cmd *Vps) List(deep bool) (servers map[string]*Vm, err error) {
+func (cmd *VpsList) List(deep bool) (servers map[string]*Vm, err error) {
 
 	var act *cpanel.Action
 
@@ -105,7 +162,8 @@ func (r *listResult) Populate(resp *http.Response, doc *goquery.Document) error 
 			value := strings.Trim(tds.Eq(j).Text(), " \t\r\n")
 			switch c {
 			case 1:
-				// GetVMStatus()で設定するのでここでは無視する
+				// GetVMStatus()で設定するのでここでは初期値を設定
+				vm.ServerStatus = StatusNoinformation
 			case 2:
 				vm.Label = value
 
@@ -124,9 +182,9 @@ func (r *listResult) Populate(resp *http.Response, doc *goquery.Document) error 
 			case 5:
 				vm.Plan = value
 			case 6:
-				vm.CreatedAt, _ = time.Parse("2006/01/02 15:04", value)
+				vm.CreatedAt, _ = time.Parse("Jan/02/2006 15:04 MST", value+" JST")
 			case 7:
-				vm.DeleteDate, _ = time.Parse("2006/01/02 15:04", value)
+				vm.DeleteDate, _ = time.Parse("Jan/02/2006 15:04 MST", value+" JST")
 			case 8:
 				vm.PaymentSpan = value
 			}
@@ -203,13 +261,13 @@ func (r *vmStatusResult) Populate(resp *http.Response) error {
 	}
 
 	switch j.StatusName {
-	case "起動中":
+	case "Running":
 		r.Status = StatusRunning
-	case "停止":
+	case "Offline":
 		r.Status = StatusOffline
-	case "設定中":
+	case "In-use":
 		r.Status = StatusInUse
-	case "構築中":
+	case "In-formulation":
 		r.Status = StatusInFormulation
 	default:
 		r.Status = StatusUnknown
