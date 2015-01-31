@@ -64,6 +64,16 @@ type VpsPlan struct {
 	planId string
 }
 
+type VpsAdd struct {
+	*Vps
+}
+
+func NewVpsAdd() *VpsAdd {
+	return &VpsAdd{
+		Vps: NewVps(),
+	}
+}
+
 func (cmd *Vps) Add(info *VpsAddInformation) error {
 
 	if info.PlanType != PlanTypeBasic && info.PlanType != PlanTypeWindows {
