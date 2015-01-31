@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hironobu-s/conoha-vps/cpanel"
+	"github.com/hironobu-s/conoha-vps/lib"
 	"github.com/howeyc/gopass"
 	"github.com/k0kubun/pp"
 	flag "github.com/ogier/pflag"
@@ -13,6 +14,12 @@ import (
 	"os"
 	"strings"
 )
+
+func NewAuth() *Auth {
+	return &Auth{
+		Command: NewCommand(),
+	}
+}
 
 type Auth struct {
 	account  string
@@ -41,16 +48,32 @@ func (cmd *Auth) parseFlag() error {
 	return nil
 }
 
-// 認証を実行してログイン状態を返す
-func (cmd *Auth) Auth() (loggedIn bool, err error) {
+func (cmd *Auth) Run() error {
+	log := lib.GetLogInstance()
 
+	var err error
 	if err = cmd.parseFlag(); err != nil {
-		return false, err
+		return err
 	}
 
 	cmd.config.Account = cmd.account
 	cmd.config.Password = cmd.password
 
+	loggedIn, err := cmd.Auth()
+	if err != nil {
+		return err
+	}
+
+	if loggedIn {
+		log.Infof("Login Successfully.")
+	} else {
+		log.Infof("Login failed. Enter correct ConoHa account ID and password.")
+	}
+	return nil
+}
+
+// 認証を実行してログイン状態を返す
+func (cmd *Auth) Auth() (loggedIn bool, err error) {
 	var act *cpanel.Action
 
 	act = &cpanel.Action{
