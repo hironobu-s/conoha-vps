@@ -15,22 +15,11 @@ var instance *logrus.Logger
 
 func GetLogInstance() *logrus.Logger {
 	if instance == nil {
-
-		//logrus.SetFormatter(&logrus.TextFormatter{})
-		//logrus.SetFormatter(&logrus.JSONFormatter{})
-
-		// 標準エラー出力に出す
-		logrus.SetOutput(os.Stderr)
-
 		// ログレベルの設定
 		instance = logrus.New()
 
-		instance.Level = logrus.DebugLevel
-		//instance.Formatter = &SimpleFormatter{}
-		instance.Formatter = &logrus.TextFormatter{}
-
-		//instance.Level = logrus.InfoLevel
-		//instance.SetOutput(os.Stderr)
+		instance.Level = logrus.InfoLevel
+		instance.Formatter = &SimpleFormatter{}
 	}
 	return instance
 }
