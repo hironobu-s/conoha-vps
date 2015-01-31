@@ -16,6 +16,9 @@ type Commander interface {
 	// コマンドライン引数を処理する
 	parseFlag() error
 
+	// // コマンドを実行する
+	Run() error
+
 	// コマンド終了時の処理を記述する
 	Shutdown()
 }
@@ -36,48 +39,19 @@ func (c *Command) Shutdown() {
 	log.Debug("write: " + c.browser.BrowserInfo.Sid())
 }
 
-func NewCommand(commandName string) (Commander, error) {
-
-	log := lib.GetLogInstance()
-	log.Debug("start " + commandName)
-
-	var err error
-
+func NewCommand() *Command {
 	// Configを作成
 	c := &lib.Config{}
-	if err = c.Read(); err != nil {
-		return nil, err
-	}
+	c.Read()
 
 	// ブラウザを作成してセッションIDをセットする
 	browser := cpanel.NewBrowser()
 	browser.BrowserInfo.FixSid(c.Sid)
 
 	// コマンドを作成する
-	command := &Command{
+	cmd := &Command{
 		config:  c,
 		browser: browser,
 	}
-
-	var cmd Commander
-	switch commandName {
-	case "auth":
-		cmd = &Auth{
-			Command: command,
-		}
-	case "vps-list":
-		fallthrough
-	case "vps-stat":
-		fallthrough
-	case "vps-add":
-		fallthrough
-	case "ssh-key":
-		fallthrough
-	case "vps-delete":
-		cmd = &Vps{
-			Command: command,
-		}
-	}
-
-	return cmd, nil
+	return cmd
 }
