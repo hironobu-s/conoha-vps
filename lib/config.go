@@ -28,27 +28,38 @@ func (c *Config) ConfigFilePath() string {
 	}
 }
 
-func (c *Config) Read() error {
+func (c *Config) Remove() {
+	var err error
+
+	path := c.ConfigFilePath()
+	if _, err = os.Stat(path); err != nil {
+		// ファイルが存在しない場合は何もしない
+		return
+	}
+	os.Remove(path)
+}
+
+func (c *Config) Read() {
 	var err error
 
 	path := c.ConfigFilePath()
 
 	if _, err = os.Stat(path); err != nil {
 		// ファイルが存在しない場合は何もしない
-		return nil
+		return
 	}
 
 	file, err := os.Open(path)
 	if err != nil {
-		return err
+		// 設定ファイルを開けない場合は何もしない
+		return
 	}
 
 	dec := json.NewDecoder(file)
 	if err := dec.Decode(&c); err != nil {
-		return err
+		// 設定ファイルが正しくない
+		return
 	}
-
-	return nil
 }
 
 func (c *Config) Write() error {
