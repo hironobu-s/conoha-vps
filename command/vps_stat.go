@@ -10,13 +10,15 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type VpsStat struct {
 	*Vps
-	vmId string
+	vmId    string
+	incIPv6 bool
 }
 
 func NewVpsStat() *VpsStat {
@@ -30,6 +32,7 @@ func (cmd *VpsStat) parseFlag() error {
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
 
 	fs.StringVarP(&cmd.vmId, "id", "i", "", "VPS-ID or Label")
+	fs.BoolVarP(&cmd.incIPv6, "include-ipv6", "v", false, "Including IPv6 informations.")
 
 	fs.Parse(os.Args[1:])
 
@@ -68,7 +71,51 @@ func (cmd *VpsStat) Run() error {
 		return err
 	}
 
-	print(vm)
+	var lines []string = []string{}
+
+	padding := 20
+	format := "%-" + strconv.Itoa(padding) + "s %s"
+
+	lines = append(lines, fmt.Sprintf(format, "VPS ID", vm.Id))
+	lines = append(lines, fmt.Sprintf(format, "ServerStatus", vm.ServerStatus))
+	lines = append(lines, fmt.Sprintf(format, "Label", vm.Label))
+	lines = append(lines, fmt.Sprintf(format, "ServiceStatus", vm.ServiceStatus))
+	lines = append(lines, fmt.Sprintf(format, "Service ID", vm.ServiceId))
+	lines = append(lines, fmt.Sprintf(format, "Plan", vm.Plan))
+	lines = append(lines, fmt.Sprintf(format, "Created At", vm.CreatedAt.Format(time.RFC3339)))
+	lines = append(lines, fmt.Sprintf(format, "Delete Date", vm.DeleteDate))
+	lines = append(lines, fmt.Sprintf(format, "Payment Span", vm.PaymentSpan))
+	lines = append(lines, fmt.Sprintf(format, "CPU", vm.NumCpuCore))
+	lines = append(lines, fmt.Sprintf(format, "Memory", vm.Memory))
+	lines = append(lines, fmt.Sprintf(format, "Disk1", vm.Disk1Size))
+	lines = append(lines, fmt.Sprintf(format, "Disk2", vm.Disk2Size))
+
+	lines = append(lines, fmt.Sprintf(format, "IPv4 Address", vm.IPv4))
+	lines = append(lines, fmt.Sprintf(format, "IPv4 Netmask", vm.IPv4netmask))
+	lines = append(lines, fmt.Sprintf(format, "IPv4 Gateway", vm.IPv4gateway))
+	lines = append(lines, fmt.Sprintf(format, "IPv4 DNS1", vm.IPv4dns1))
+	lines = append(lines, fmt.Sprintf(format, "IPv4 DNS2", vm.IPv4dns2))
+
+	if cmd.incIPv6 {
+		for i := 0; i < len(vm.IPv6); i++ {
+			if i == 0 {
+				lines = append(lines, fmt.Sprintf(format, "IPv6 Address", vm.IPv6[i]))
+			} else {
+				lines = append(lines, fmt.Sprintf(format, "", vm.IPv6[i]))
+			}
+		}
+		lines = append(lines, fmt.Sprintf(format, "IPv6 Gateway", vm.IPv6gateway))
+		lines = append(lines, fmt.Sprintf(format, "IPv6 DNS1", vm.IPv6dns1))
+		lines = append(lines, fmt.Sprintf(format, "IPv6 DNS2", vm.IPv6dns2))
+	}
+
+	lines = append(lines, fmt.Sprintf(format, "Host Server", vm.House))
+	lines = append(lines, fmt.Sprintf(format, "Common Server ID", vm.CommonServerId))
+	lines = append(lines, fmt.Sprintf(format, "Serial Console(SSH)", vm.SerialConsoleHost))
+	lines = append(lines, fmt.Sprintf(format, "ISO Upload(SFTP)", vm.IsoUploadHost))
+
+	fmt.Println(strings.Join(lines, "\n"))
+
 	return nil
 }
 
@@ -197,15 +244,17 @@ func (r *statResult) populateDate(doc *goquery.Document) error {
 	// 利用開始日
 	body = doc.Find("#subCtrlBoxNav .startData").Text()
 
-	reg = regexp.MustCompile("利用開始日:([0-9/]*)")
+	reg = regexp.MustCompile("Started:([0-9/]*)")
 	matches = reg.FindAllStringSubmatch(body, -1)
 
-	if len(matches) > 0 && len(matches[0]) > 1 {
+	if len(matches) > 0 && len(matches[0]) > 1 && matches[0][1] != "" {
 		date, err = time.Parse("2006/01/02 MST", matches[0][1]+" JST")
 		if err != nil {
 			return err
 		}
 		r.vm.CreatedAt = date
+	} else if matches[0][1] == "" {
+		// 日付が空欄。何もしない
 	} else {
 		// パースエラー
 		return errors.New("Parse error. Can't detect CreatedAt.")
@@ -214,14 +263,16 @@ func (r *statResult) populateDate(doc *goquery.Document) error {
 	// 削除予定日
 	body = doc.Find("#subCtrlBoxNav .endData").Text()
 
-	reg = regexp.MustCompile("削除予定日:([0-9/]*)")
+	reg = regexp.MustCompile("Scheduled Removal Date:([0-9/]*)")
 	matches = reg.FindAllStringSubmatch(body, -1)
 
-	if len(matches) > 0 && len(matches[0]) > 1 {
+	if len(matches) > 0 && len(matches[0]) > 1 && matches[0][1] != "" {
 		date, err = time.Parse("2006/01/02 MST", matches[0][1]+" JST")
 		if err == nil {
 			r.vm.DeleteDate = date
 		}
+	} else if matches[0][1] == "" {
+		// 日付が空欄。何もしない
 	} else {
 		// パースエラー
 		return errors.New("Parse error. Can't detect DeleteDate.")
@@ -232,7 +283,7 @@ func (r *statResult) populateDate(doc *goquery.Document) error {
 func (r *statResult) populateUploadHost(doc *goquery.Document) error {
 	// ISOアップロード先とシリアルコンソール接続先
 	body := doc.Find("DL.listStyle01").Text()
-	reg := regexp.MustCompile("接続先：(.+)／")
+	reg := regexp.MustCompile("Connect to: (.+)/")
 
 	matches := reg.FindAllStringSubmatch(body, -1)
 	if len(matches) != 2 || len(matches[0]) != 2 || len(matches[1]) != 2 {
