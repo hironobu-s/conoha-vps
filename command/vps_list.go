@@ -45,7 +45,7 @@ func (cmd *VpsList) Run() error {
 		return err
 	}
 
-	var servers map[string]*Vm
+	var servers []*Vm
 	servers, err = cmd.List(cmd.verbose)
 	if err != nil {
 		return err
@@ -81,8 +81,8 @@ func (cmd *VpsList) Vm(vmId string) *Vm {
 		return nil
 	}
 
-	for id, vps := range servers {
-		if id == vmId {
+	for _, vps := range servers {
+		if vps.Id == vmId {
 			target = vps
 		}
 	}
@@ -92,7 +92,7 @@ func (cmd *VpsList) Vm(vmId string) *Vm {
 
 // VPSの一覧を取得して、IDをキー、Vm構造体のポインタを値としたスライスを返す
 // 引数のdeepCrawlをtrueにすると、VMのステータスも取得する
-func (cmd *VpsList) List(deep bool) (servers map[string]*Vm, err error) {
+func (cmd *VpsList) List(deep bool) (servers []*Vm, err error) {
 
 	var act *cpanel.Action
 
@@ -135,7 +135,7 @@ func (r *listRequest) NewRequest(values url.Values) (*http.Request, error) {
 }
 
 type listResult struct {
-	servers map[string]*Vm
+	servers []*Vm
 }
 
 func (r *listResult) Populate(resp *http.Response, doc *goquery.Document) error {
@@ -143,7 +143,7 @@ func (r *listResult) Populate(resp *http.Response, doc *goquery.Document) error 
 	// VPSの一覧を取得する
 	sel := doc.Find("#gridServiceList TR")
 
-	servers := map[string]*Vm{}
+	servers := []*Vm{}
 	for i := range sel.Nodes {
 		tr := sel.Eq(i)
 		tds := tr.Find("TD")
@@ -192,7 +192,7 @@ func (r *listResult) Populate(resp *http.Response, doc *goquery.Document) error 
 			c++
 		}
 
-		servers[vm.Id] = vm
+		servers = append(servers, vm)
 	}
 
 	r.servers = servers
