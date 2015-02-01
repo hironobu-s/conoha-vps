@@ -5,6 +5,7 @@ package command
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hironobu-s/conoha-vps/cpanel"
@@ -29,12 +30,34 @@ func NewVpsList() *VpsList {
 }
 
 func (cmd *VpsList) parseFlag() error {
+	var help bool
+
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+	fs.Usage = cmd.Usage
+
+	fs.BoolVarP(&help, "help", "h", false, "help")
 	fs.BoolVarP(&cmd.verbose, "Verbose", "v", false, "Verbose output.")
 
 	fs.Parse(os.Args[1:])
 
+	if help {
+		fs.Usage()
+		return errors.New("")
+	}
+
 	return nil
+}
+
+func (cd *VpsList) Usage() {
+	fmt.Println(`Usage: conoha list [OPTIONS]
+
+DESCRIPTION
+    List VPS status.
+
+OPTIONS
+    -h: --help:     Show usage.      
+    -v: --verbose:  Verbose output(Including the server status).
+`)
 }
 
 func (cmd *VpsList) Run() error {
