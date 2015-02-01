@@ -6,11 +6,15 @@ import (
 	flag "github.com/ogier/pflag"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type Ssh struct {
 	// SSH接続先のVM
 	vmId string
+
+	// SSHユーザ
+	sshUser string
 
 	// SSHコマンドに渡すオプション
 	sshOptions []string
@@ -20,7 +24,8 @@ type Ssh struct {
 
 func NewSsh() *Ssh {
 	return &Ssh{
-		Vps: NewVps(),
+		sshUser: "root",
+		Vps:     NewVps(),
 	}
 }
 
@@ -30,28 +35,43 @@ func (cmd *Ssh) parseFlag() error {
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
 	fs.Usage = cmd.Usage
 
-	fs.BoolVarP(&help, "help", "h", false, "help")
+	// pflagsはparse()すると設定していないフラグが全てエラーになってしまう。
+	// 仕方ないので、ssh コマンドにオプションを渡せるようにするため、自前でパースする。
+	options := []string{}
+	for i := 2; i < len(os.Args); i++ {
+		// 最初の引数は - で開始してない場合はVPS-IDとみなす
+		if i == 2 && !strings.HasPrefix(os.Args[i], "-") {
+			cmd.vmId = os.Args[i]
+			continue
+		}
 
-	fs.Parse(os.Args[1:])
+		if os.Args[i] == "-h" {
+			help = true
+		} else if os.Args[i] == "-u" {
+			cmd.sshUser = os.Args[i+1]
+			i++
+		} else {
+			options = append(options, os.Args[i])
+		}
+	}
 
 	if help {
 		fs.Usage()
 		return errors.New("")
 	}
 
-	if len(fs.Args()) < 2 {
+	if cmd.vmId == "" {
 		vm, err := cmd.Vps.vpsSelectMenu()
 		if err != nil {
 			return err
 		}
 
-		cmd.vmId = vm.Id
-
-	} else {
 		// 接続先のVmのID
-		cmd.vmId = os.Args[2]
-		cmd.sshOptions = os.Args[3:]
+		cmd.vmId = vm.Id
 	}
+
+	// SSHオプション
+	cmd.sshOptions = options
 
 	return nil
 }
@@ -69,6 +89,7 @@ DESCRIPTION
          If not set, It will be selected from the list menu.
 
 OPTIONS
+    -u: --user:     SSH username.
     -h: --help:     Show usage.      
 `)
 }
@@ -92,7 +113,7 @@ func (cmd *Ssh) Run() error {
 		return err
 	}
 
-	cmd.Connect(stat.IPv4, "root", cmd.sshOptions)
+	cmd.Connect(stat.IPv4, cmd.sshUser, cmd.sshOptions)
 
 	return nil
 }
@@ -111,6 +132,5 @@ func (cmd *Ssh) Connect(host string, user string, args []string) {
 	ssh.Stdin = os.Stdin
 	ssh.Stdout = os.Stdout
 	ssh.Stderr = os.Stderr
-
 	ssh.Run()
 }
