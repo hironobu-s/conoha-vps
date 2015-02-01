@@ -96,6 +96,17 @@ func (cmd *Login) Run() error {
 	return nil
 }
 
+func (cmd *Login) Relogin() (loggedIn bool, err error) {
+	cmd.account = cmd.config.Account
+	cmd.password = cmd.config.Password
+
+	if cmd.account == "" || cmd.password == "" {
+		return false, nil
+	}
+
+	return cmd.Login()
+}
+
 // 認証を実行してログイン状態を返す
 func (cmd *Login) Login() (loggedIn bool, err error) {
 	var act *cpanel.Action

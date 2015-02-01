@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	var err error
 
 	log := lib.GetLogInstance()
 
@@ -50,12 +51,18 @@ func main() {
 
 		loggedIn, _ := l.LoggedIn()
 		if !loggedIn {
-			log.Errorf("Session is timed out. Please log in.")
-			return
+			log.Debugf("Session is timed out. try relogin...")
+
+			// 再ログイン
+			loggedIn, err = l.Relogin()
+			if !loggedIn {
+				log.Errorf("Session is timed out. Please log in.")
+				return
+			}
 		}
 	}
 
-	if err := cmd.Run(); err != nil {
+	if err = cmd.Run(); err != nil {
 		// ShowUsageErrorの場合はUsage()を表示してるだけなのでログは表示しない
 		_, ok := err.(*command.ShowUsageError)
 		if !ok {
