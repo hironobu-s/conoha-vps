@@ -7,7 +7,6 @@ import (
 	"github.com/hironobu-s/conoha-vps/cpanel"
 	"github.com/hironobu-s/conoha-vps/lib"
 	"github.com/howeyc/gopass"
-	"github.com/k0kubun/pp"
 	flag "github.com/ogier/pflag"
 	"net/http"
 	"net/url"
