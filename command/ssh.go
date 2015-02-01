@@ -25,9 +25,19 @@ func NewSsh() *Ssh {
 }
 
 func (cmd *Ssh) parseFlag() error {
+	var help bool
 
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+	fs.Usage = cmd.Usage
+
+	fs.BoolVarP(&help, "help", "h", false, "help")
+
 	fs.Parse(os.Args[1:])
+
+	if help {
+		fs.Usage()
+		return errors.New("")
+	}
 
 	if len(fs.Args()) < 2 {
 		vm, err := cmd.Vps.vpsSelectMenu()
@@ -44,6 +54,23 @@ func (cmd *Ssh) parseFlag() error {
 	}
 
 	return nil
+}
+
+func (cmd *Ssh) Usage() {
+	fmt.Println(`Usage: conoha ssh <VPS-ID> [OPTIONS ...]
+
+DESCRIPTION
+    Login to VPS via SSH.
+    There needs to be installed SSH client and all of option parameters will be passed into SSH command.
+
+    It may not work on Windows.
+
+<VPS-ID> VPS-ID to get the stats. It may be confirmed by LIST subcommand.
+         If not set, It will be selected from the list menu.
+
+OPTIONS
+    -h: --help:     Show usage.      
+`)
 }
 
 func (cmd *Ssh) Run() error {
