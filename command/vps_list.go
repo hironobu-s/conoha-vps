@@ -193,6 +193,13 @@ func (r *listResult) Populate(resp *http.Response, doc *goquery.Document) error 
 		// Vm構造体を準備
 		vm := &Vm{}
 
+		// TrIDを取得
+		trid, exists := tr.Attr("id")
+		if !exists {
+			return errors.New("TrID not exists")
+		}
+		vm.TrId = trid
+
 		// VMの各要素を取得
 		c := 0
 		for j := range tds.Nodes {
@@ -213,7 +220,6 @@ func (r *listResult) Populate(resp *http.Response, doc *goquery.Document) error 
 				} else {
 					// VPSの作成待ちの場合はIDが存在しない場合がある
 					vm.Id = ""
-					//return errors.New(`Nothing Attribute "href". Could not detect the VmID.`)
 				}
 
 			case 3:
