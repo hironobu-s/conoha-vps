@@ -67,6 +67,7 @@ func (s ServerStatus) String() string {
 // ServiceStatusとServerStatusは別物であることに注意
 type Vm struct {
 	Id            string
+	TrId          string // VPS削除などに使うもう一つのID。アプリケーション内のみで使用する。
 	ServerStatus  ServerStatus
 	Label         string
 	ServiceStatus string
