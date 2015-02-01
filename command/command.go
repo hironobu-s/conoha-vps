@@ -58,3 +58,13 @@ func NewCommand() *Command {
 	}
 	return cmd
 }
+
+// USage()を表示するだけの場合でもErrorを返すことになるので、
+// この場合は専用のエラーを返すようにする。
+type ShowUsageError struct {
+	s string
+}
+
+func (e ShowUsageError) Error() string {
+	return e.s
+}
