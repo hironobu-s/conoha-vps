@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	VERSION    = "v20150201.1"
 	CONFIGFILE = ".conoha-vps"
 )
 
