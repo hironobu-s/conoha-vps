@@ -18,7 +18,8 @@ func GetLogInstance() *logrus.Logger {
 		instance = logrus.New()
 
 		instance.Level = logrus.InfoLevel
-		instance.Formatter = &SimpleFormatter{}
+		//instance.Formatter = &SimpleFormatter{}
+		instance.Formatter = &logrus.TextFormatter{}
 	}
 	return instance
 }
