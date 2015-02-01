@@ -249,6 +249,9 @@ func (cmd *Vps) Add(info *VpsAddInformation) error {
 	if err := cmd.browser.Run(); err != nil {
 		return err
 	}
+
+	log.Infof("Adding VPS is complete.")
+
 	return nil
 }
 
