@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"github.com/hironobu-s/conoha-vps/lib"
 	flag "github.com/ogier/pflag"
 	"os"
 )
@@ -55,4 +56,10 @@ func (cmd *Logout) Run() error {
 
 	cmd.config.Remove()
 	return nil
+}
+
+// Command構造体にあるShutdown()は、設定ファイルを作成してしまう。
+func (c *Logout) Shutdown() {
+	log := lib.GetLogInstance()
+	log.Debug("logout")
 }

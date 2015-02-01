@@ -37,6 +37,7 @@ func (c *Config) Remove() {
 		// ファイルが存在しない場合は何もしない
 		return
 	}
+
 	os.Remove(path)
 }
 
