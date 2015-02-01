@@ -68,8 +68,8 @@ func (act *Action) Run(bi *BrowserInfo) (err error) {
 	// dump, _ := httputil.DumpRequest(req, true)
 	// println(string(dump))
 
-	// if req.URL.String() == "https://cp.conoha.jp/Service/VPS/Del/Confirm.aspx" && req.Method == "POST" {
-	// 	dump, _ = httputil.DumpResponse(resp, true)
+	// if req.URL.String() == "https://cp.conoha.jp/Service/VPS/" && req.Method == "POST" {
+	// 	dump, _ = httputil.DumpResponse(resp, false)
 	// 	println(string(dump))
 	// }
 
@@ -182,15 +182,20 @@ type Browser struct {
 	actions []*Action
 }
 
+var browserInstance *Browser
+
 func NewBrowser() *Browser {
 
-	info := &BrowserInfo{}
-	info.InitializeDefault()
+	if browserInstance == nil {
 
-	b := &Browser{
-		BrowserInfo: info,
+		info := &BrowserInfo{}
+		info.InitializeDefault()
+
+		browserInstance = &Browser{
+			BrowserInfo: info,
+		}
 	}
-	return b
+	return browserInstance
 }
 
 // アクションを追加する
