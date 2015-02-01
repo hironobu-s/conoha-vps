@@ -28,12 +28,20 @@ func NewVpsStat() *VpsStat {
 }
 
 func (cmd *VpsStat) parseFlag() error {
+	var help bool
 
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+	fs.Usage = cmd.Usage
 
-	fs.BoolVarP(&cmd.incIPv6, "include-ipv6", "v", false, "Including IPv6 informations.")
+	fs.BoolVarP(&help, "help", "h", false, "help")
+	fs.BoolVarP(&cmd.incIPv6, "include-ipv6", "6", false, "Including IPv6 informations.")
 
 	fs.Parse(os.Args[1:])
+
+	if help {
+		fs.Usage()
+		return errors.New("")
+	}
 
 	if len(fs.Args()) < 2 {
 		// コマンドライン引数で指定されていない場合は、標準入力から受け付ける
@@ -47,6 +55,21 @@ func (cmd *VpsStat) parseFlag() error {
 		cmd.vmId = os.Args[2]
 	}
 	return nil
+}
+
+func (cd *VpsStat) Usage() {
+	fmt.Println(`Usage: conoha stat <VPS-ID> [OPTIONS]
+
+DESCRIPTION
+    Show VPS stats.
+
+<VPS-ID> VPS-ID to get the stats. It may be confirmed by LIST subcommand.
+         If not set, It will be selected from the list menu.
+
+OPTIONS
+    -h: --help:         Show usage.      
+    -6 --include-ipv6:  Include IPv6 informations in output.
+`)
 }
 
 func (cmd *VpsStat) Run() error {
