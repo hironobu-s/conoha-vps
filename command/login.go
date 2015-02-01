@@ -127,7 +127,6 @@ type loginFormResult struct {
 }
 
 func (r *loginFormResult) Populate(resp *http.Response, doc *goquery.Document) error {
-	pp.Printf("loginForm done.\n")
 	return nil
 }
 
@@ -159,7 +158,6 @@ type loginDoResult struct {
 }
 
 func (r *loginDoResult) Populate(resp *http.Response, doc *goquery.Document) error {
-	pp.Printf("loginDo done.\n")
 	return nil
 }
 
