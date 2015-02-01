@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hironobu-s/conoha-vps/cpanel"
+	"github.com/hironobu-s/conoha-vps/lib"
 	flag "github.com/ogier/pflag"
 	"net/http"
 	"net/url"
@@ -222,6 +223,8 @@ func (cmd *VpsAdd) Run() error {
 }
 
 func (cmd *Vps) Add(info *VpsAddInformation) error {
+
+	log := lib.GetLogInstance()
 
 	var act *cpanel.Action
 	act = &cpanel.Action{
