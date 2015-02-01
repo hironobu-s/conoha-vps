@@ -36,7 +36,10 @@ func (cmd *VpsStat) parseFlag() error {
 	fs.BoolVarP(&help, "help", "h", false, "help")
 	fs.BoolVarP(&cmd.incIPv6, "include-ipv6", "6", false, "Including IPv6 informations.")
 
-	fs.Parse(os.Args[1:])
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fs.Usage()
+		return err
+	}
 
 	if help {
 		fs.Usage()

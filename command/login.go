@@ -37,7 +37,10 @@ func (cmd *Login) parseFlag() error {
 	fs.StringVarP(&cmd.account, "account", "a", "", "ConoHa Account")
 	fs.StringVarP(&cmd.password, "password", "p", "", "ConoHa Password")
 
-	fs.Parse(os.Args[1:])
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fs.Usage()
+		return err
+	}
 
 	if help {
 		fs.Usage()

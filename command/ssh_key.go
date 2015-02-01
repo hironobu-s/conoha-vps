@@ -35,7 +35,10 @@ func (cmd *SshKey) parseFlag() error {
 	fs.BoolVarP(&help, "help", "h", false, "help")
 	fs.StringVarP(&cmd.destPath, "path", "f", "", ``)
 
-	fs.Parse(os.Args[1:])
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fs.Usage()
+		return err
+	}
 
 	if help {
 		fs.Usage()

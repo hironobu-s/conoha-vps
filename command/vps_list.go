@@ -38,7 +38,10 @@ func (cmd *VpsList) parseFlag() error {
 	fs.BoolVarP(&help, "help", "h", false, "help")
 	fs.BoolVarP(&cmd.verbose, "Verbose", "v", false, "Verbose output.")
 
-	fs.Parse(os.Args[1:])
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fs.Usage()
+		return err
+	}
 
 	if help {
 		fs.Usage()
