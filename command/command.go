@@ -19,6 +19,9 @@ type Commander interface {
 	// // コマンドを実行する
 	Run() error
 
+	// コマンドのUsageを表示する
+	Usage()
+
 	// コマンド終了時の処理を記述する
 	Shutdown()
 }
