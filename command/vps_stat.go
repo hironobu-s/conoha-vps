@@ -162,6 +162,12 @@ func (cmd *VpsStat) Stat(vmId string) (*Vm, error) {
 		return nil, err
 	}
 
+	status, err := cmd.GetVMStatus(vm.Id)
+	if err != nil {
+		return vm, err
+	}
+	vm.ServerStatus = status
+
 	return vm, nil
 }
 
