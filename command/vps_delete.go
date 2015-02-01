@@ -8,22 +8,88 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hironobu-s/conoha-vps/cpanel"
+	"github.com/hironobu-s/conoha-vps/lib"
+	flag "github.com/ogier/pflag"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
-type VpsDelete struct {
+type VpsRemove struct {
+	vmId        string
+	forceRemove bool
 	*Vps
 }
 
-func NewVpsDelete() *VpsDelete {
-	return &VpsDelete{
+func NewVpsRemove() *VpsRemove {
+	return &VpsRemove{
 		Vps: NewVps(),
 	}
 }
 
-func (cmd *VpsDelete) Delete(vmId string) error {
+func (cmd *VpsRemove) parseFlag() error {
+	var help bool
+
+	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+	fs.Usage = cmd.Usage
+
+	fs.BoolVarP(&help, "help", "h", false, "help")
+	fs.BoolVarP(&cmd.forceRemove, "force-remove", "f", false, "force remove.")
+
+	fs.Parse(os.Args[1:])
+
+	if help {
+		fs.Usage()
+		return errors.New("")
+	}
+
+	if len(fs.Args()) < 2 {
+		// コマンドライン引数で指定されていない場合は、標準入力から受け付ける
+		vm, err := cmd.Vps.vpsSelectMenu()
+		if err != nil {
+			return err
+		}
+		cmd.vmId = vm.Id
+
+	} else {
+		cmd.vmId = os.Args[2]
+	}
+	return nil
+}
+
+func (cd *VpsRemove) Usage() {
+	fmt.Println(`Usage: conoha stat <VPS-ID> [OPTIONS]
+
+DESCRIPTION
+    Remove VPS.
+
+<VPS-ID> VPS-ID to get the stats. It may be confirmed by LIST subcommand.
+         If not set, It will be selected with prompting for VPS list.
+
+OPTIONS
+    -h: --help:          Show usage.
+    -f: --force-remove:  Attempt to remove the VPS without prompting for comfirmation .
+`)
+}
+
+func (cmd *VpsRemove) Run() error {
+	var err error
+	if err = cmd.parseFlag(); err != nil {
+		return err
+	}
+
+	err = cmd.Remove(cmd.vmId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (cmd *VpsRemove) Remove(vmId string) error {
+
+	log := lib.GetLogInstance()
+
 	// 削除対象のVMを特定する
 	vpsList := NewVpsList()
 	vm := vpsList.Vm(vmId)
@@ -32,25 +98,32 @@ func (cmd *VpsDelete) Delete(vmId string) error {
 		return errors.New(msg)
 	}
 
+	// 削除確認
+	if !cmd.forceRemove {
+		if !cmd.confirmationRemove(vm) {
+			return nil
+		}
+	}
+
 	// 削除実行
 	var act *cpanel.Action
 	act = &cpanel.Action{
-		Request: &deleteFormRequest{
+		Request: &removeFormRequest{
 			vm: vm,
 		},
-		Result: &deleteFormResult{},
+		Result: &removeFormResult{},
 	}
 	cmd.browser.AddAction(act)
 
 	act = &cpanel.Action{
-		Request: &deleteConfirmRequest{},
-		Result:  &deleteConfirmResult{},
+		Request: &removeConfirmRequest{},
+		Result:  &removeConfirmResult{},
 	}
 	cmd.browser.AddAction(act)
 
 	act = &cpanel.Action{
-		Request: &deleteSubmitRequest{},
-		Result:  &deleteSubmitResult{},
+		Request: &removeSubmitRequest{},
+		Result:  &removeSubmitResult{},
 	}
 	cmd.browser.AddAction(act)
 
@@ -58,16 +131,36 @@ func (cmd *VpsDelete) Delete(vmId string) error {
 		return err
 	}
 
+	log.Infof("Removing VPS is complete.")
+
 	return nil
 }
 
-type deleteFormRequest struct {
+// 削除確認ダイアログ
+func (cmd *VpsRemove) confirmationRemove(vm *Vm) bool {
+
+	fmt.Printf("Remove VPS[Label=%s]. Are you sure?\n", vm.Label)
+	fmt.Print("[y/N]: ")
+
+	var no string
+	if _, err := fmt.Scanf("%s", &no); err != nil {
+		return false
+	}
+
+	if no == "y" {
+		return true
+	} else {
+		return false
+	}
+}
+
+type removeFormRequest struct {
 	vm *Vm
 }
 
-func (r *deleteFormRequest) NewRequest(values url.Values) (*http.Request, error) {
+func (r *removeFormRequest) NewRequest(values url.Values) (*http.Request, error) {
 	// VPSのIDを指定
-	values.Set("ctl00$ctl00$ContentPlaceHolder1$ContentPlaceHolder1$gridServiceList$tr-"+r.vm.Id+"$ctl01", "on")
+	values.Set("ctl00$ctl00$ContentPlaceHolder1$ContentPlaceHolder1$gridServiceList$"+r.vm.TrId+"$ctl01", "on")
 
 	// これが削除ページのトリガになっているらしい
 	values.Set("__EVENTTARGET", "ctl00$ctl00$ContentPlaceHolder1$ContentPlaceHolder1$btnDel")
@@ -84,9 +177,13 @@ func (r *deleteFormRequest) NewRequest(values url.Values) (*http.Request, error)
 	return req, nil
 }
 
-type deleteFormResult struct{}
+type removeFormResult struct{}
 
-func (r *deleteFormResult) Populate(resp *http.Response, doc *goquery.Document) error {
+func (r *removeFormResult) Populate(resp *http.Response, doc *goquery.Document) error {
+
+	// b, _ := ioutil.ReadAll(resp.Body)
+	// fmt.Println("body: " + string(b))
+
 	// 確認ボタンが表示されていることを確認
 	sel := doc.Find("#ContentPlaceHolder1_ContentPlaceHolder1_btnConfirm")
 	v, _ := sel.Attr("value")
@@ -98,9 +195,9 @@ func (r *deleteFormResult) Populate(resp *http.Response, doc *goquery.Document) 
 
 // ---------------------------
 
-type deleteConfirmRequest struct{}
+type removeConfirmRequest struct{}
 
-func (r *deleteConfirmRequest) NewRequest(values url.Values) (*http.Request, error) {
+func (r *removeConfirmRequest) NewRequest(values url.Values) (*http.Request, error) {
 	values.Set("ctl00$ctl00$ContentPlaceHolder1$ContentPlaceHolder1$btnConfirm", "確認")
 
 	// フォームを取得
@@ -114,23 +211,23 @@ func (r *deleteConfirmRequest) NewRequest(values url.Values) (*http.Request, err
 	return req, nil
 }
 
-type deleteConfirmResult struct{}
+type removeConfirmResult struct{}
 
-func (r *deleteConfirmResult) Populate(resp *http.Response, doc *goquery.Document) error {
+func (r *removeConfirmResult) Populate(resp *http.Response, doc *goquery.Document) error {
 	// 決定ボタンが表示されていることを確認
 	sel := doc.Find("#ContentPlaceHolder1_ContentPlaceHolder1_btnConfirm")
 	v, _ := sel.Attr("value")
 	if v == "" {
-		return errors.New("Server returned the invalid body(Confirm button is not included).")
+		return errors.New("Server returned the invalid body(Submit button is not included).")
 	}
 	return nil
 }
 
 // ---------------------------
 
-type deleteSubmitRequest struct{}
+type removeSubmitRequest struct{}
 
-func (r *deleteSubmitRequest) NewRequest(values url.Values) (*http.Request, error) {
+func (r *removeSubmitRequest) NewRequest(values url.Values) (*http.Request, error) {
 	values.Set("ctl00$ctl00$ContentPlaceHolder1$ContentPlaceHolder1$btnConfirm", "決定")
 
 	// フォームを取得
@@ -144,9 +241,9 @@ func (r *deleteSubmitRequest) NewRequest(values url.Values) (*http.Request, erro
 	return req, nil
 }
 
-type deleteSubmitResult struct{}
+type removeSubmitResult struct{}
 
-func (r *deleteSubmitResult) Populate(resp *http.Response, doc *goquery.Document) error {
+func (r *removeSubmitResult) Populate(resp *http.Response, doc *goquery.Document) error {
 	// 削除に成功するとBodyに通知メッセージが含まれている
 	sel := doc.Find("#ltInfoMessage")
 	if sel.Text() != "" {
