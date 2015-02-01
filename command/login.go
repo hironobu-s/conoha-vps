@@ -44,7 +44,7 @@ func (cmd *Login) parseFlag() error {
 
 	if help {
 		fs.Usage()
-		return errors.New("")
+		return &ShowUsageError{}
 	}
 
 	if cmd.account == "" || cmd.password == "" {

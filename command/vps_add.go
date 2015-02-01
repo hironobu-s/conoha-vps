@@ -136,7 +136,7 @@ func (cmd *VpsAdd) parseFlag() error {
 
 	if help {
 		fs.Usage()
-		return errors.New("Not enough arguments.")
+		return &ShowUsageError{}
 	}
 
 	if plantype == "basic" {

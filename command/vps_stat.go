@@ -43,7 +43,7 @@ func (cmd *VpsStat) parseFlag() error {
 
 	if help {
 		fs.Usage()
-		return errors.New("")
+		return &ShowUsageError{}
 	}
 
 	if len(fs.Args()) < 2 {

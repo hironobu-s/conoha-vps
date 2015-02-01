@@ -45,7 +45,7 @@ func (cmd *VpsList) parseFlag() error {
 
 	if help {
 		fs.Usage()
-		return errors.New("")
+		return &ShowUsageError{}
 	}
 
 	return nil

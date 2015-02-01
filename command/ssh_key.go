@@ -1,7 +1,6 @@
 package command
 
 import (
-	"errors"
 	"fmt"
 	"github.com/hironobu-s/conoha-vps/cpanel"
 	"github.com/hironobu-s/conoha-vps/lib"
@@ -42,7 +41,7 @@ func (cmd *SshKey) parseFlag() error {
 
 	if help {
 		fs.Usage()
-		return errors.New("")
+		return &ShowUsageError{}
 	}
 
 	if cmd.destPath == "" {

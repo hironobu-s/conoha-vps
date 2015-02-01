@@ -38,5 +38,5 @@ COMMANDS
 
 func (cmd *Nocommand) Run() error {
 	cmd.Usage()
-	return nil
+	return &ShowUsageError{}
 }

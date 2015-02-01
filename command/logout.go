@@ -1,7 +1,6 @@
 package command
 
 import (
-	"errors"
 	"fmt"
 	flag "github.com/ogier/pflag"
 	"os"
@@ -32,7 +31,7 @@ func (cmd *Logout) parseFlag() error {
 
 	if help {
 		fs.Usage()
-		return errors.New("")
+		return &ShowUsageError{}
 	}
 
 	return nil
