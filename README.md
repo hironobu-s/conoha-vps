@@ -22,14 +22,45 @@ ConoHa VPSのコントロールパネルは非常に使いやすく、VPSの操�
 
 ## ビルド方法
 
-GOPATH配下にgit cloneして
+CentOS系の場合、以下のようにします。DebianやUbuntuはyumをaptにすれば大丈夫だと思います。
+
 
 ```
-go build
+# Goの環境をインストールします。
+# また、依存ライブラリをgo getするのにMercurialが必要です。
+yum install go hg
+
+# GOPATHを設定します
+export GOPATH=$HOME/go
+
+# ソースコードを取得します
+go get github.com/hironobu-s/conoha-vps
+
+# ビルドします
+cd $GOPATH/src/github.com/hironobu-s/conoha-vps
+go build -o conoha
+
+# 実行します
+./conoha version
 ```
 
 ## インストール
+(これから書く)
+
 ## クイックスタート
+
+最初にログインします
+```
+$ conoha login
+```
+
+VPS一覧を取得します
+```
+$ conoha list
+```
+
+(つづく)
+
 ## 使い方
 
 (これから書く)
