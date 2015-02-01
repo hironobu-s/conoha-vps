@@ -117,6 +117,7 @@ func (cmd *VpsAdd) parseFlag() error {
 	var help bool
 	var plantype, template, root string
 	var plan int
+	var err error
 
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
 	fs.Usage = cmd.Usage
@@ -127,13 +128,15 @@ func (cmd *VpsAdd) parseFlag() error {
 	fs.StringVarP(&template, "image", "i", "", "")
 	fs.StringVarP(&root, "password", "P", "", "")
 
-	fs.Parse(os.Args[1:])
+	if err = fs.Parse(os.Args[1:]); err != nil {
+		return err
+	}
 
 	// --------------
 
 	if help {
 		fs.Usage()
-		return errors.New("")
+		return errors.New("Not enough arguments.")
 	}
 
 	if plantype == "basic" {
@@ -141,6 +144,7 @@ func (cmd *VpsAdd) parseFlag() error {
 	} else if plantype == "windows" {
 		cmd.info.PlanType = PlanTypeWindows
 	} else {
+		fs.Usage()
 		return errors.New(`PlanType(-t) parameter should be "basic" or "windows".`)
 	}
 
@@ -155,6 +159,7 @@ func (cmd *VpsAdd) parseFlag() error {
 	} else if plan == 16 {
 		cmd.info.Plan = Plan16G
 	} else {
+		fs.Usage()
 		return errors.New("Plan(-p) is invalid.")
 	}
 
@@ -167,12 +172,14 @@ func (cmd *VpsAdd) parseFlag() error {
 	} else if template == "windows2008" {
 		cmd.info.Template = TemplateDefault4
 	} else {
+		fs.Usage()
 		return errors.New("Template Image(-i) is invalid.")
 	}
 
 	cmd.info.RootPassword = root
 
-	if err := cmd.info.Validate(); err != nil {
+	if err = cmd.info.Validate(); err != nil {
+		fs.Usage()
 		return err
 	}
 
