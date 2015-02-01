@@ -28,13 +28,21 @@ type Login struct {
 }
 
 func (cmd *Login) parseFlag() error {
+	var help bool
 
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+	fs.Usage = cmd.Usage
 
+	fs.BoolVarP(&help, "help", "h", false, "help")
 	fs.StringVarP(&cmd.account, "account", "a", "", "ConoHa Account")
 	fs.StringVarP(&cmd.password, "password", "p", "", "ConoHa Password")
 
 	fs.Parse(os.Args[1:])
+
+	if help {
+		fs.Usage()
+		return errors.New("")
+	}
 
 	if cmd.account == "" || cmd.password == "" {
 
@@ -45,6 +53,20 @@ func (cmd *Login) parseFlag() error {
 	}
 
 	return nil
+}
+
+func (cd *Login) Usage() {
+	fmt.Println(`Usage: conoha login [OPTIONS]
+
+DESCRIPTION
+    Authenticate an account.
+    If account or password not set, you can input interactively.
+
+OPTIONS
+    -a: --account:   ConoHa Account.
+    -p: --password:  Password.
+    -h: --help:      Show usage.  
+`)
 }
 
 func (cmd *Login) Run() error {
