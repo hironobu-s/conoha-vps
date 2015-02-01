@@ -75,7 +75,16 @@ func (i *VpsAddInformation) Validate() error {
 		return errors.New("Invalid Plan.")
 	}
 
-	if i.Template != TemplateDefault1 && i.Template != TemplateDefault2 {
+	if i.Template != TemplateDefault1 &&
+		i.Template != TemplateDefault2 &&
+		i.Template != TemplateDefault3 &&
+		i.Template != TemplateDefault4 {
+		return errors.New("Invalid Template.")
+	}
+	if i.PlanType == PlanTypeBasic && (i.Template == TemplateDefault3 || i.Template == TemplateDefault4) {
+		return errors.New("Invalid Template.")
+	}
+	if i.PlanType == PlanTypeWindows && (i.Template == TemplateDefault1 || i.Template == TemplateDefault1) {
 		return errors.New("Invalid Template.")
 	}
 
@@ -105,17 +114,17 @@ func NewVpsAdd() *VpsAdd {
 
 func (cmd *VpsAdd) parseFlag() error {
 	var help bool
-	var plantype, root string
-	var plan, template int
+	var plantype, template, root string
+	var plan int
 
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
 	fs.Usage = cmd.Usage
 
 	fs.BoolVarP(&help, "help", "h", false, "help")
-	fs.StringVarP(&plantype, "plantype", "t", "basic", "")
-	fs.IntVarP(&plan, "plan", "n", -1, "")
-	fs.IntVarP(&template, "image", "i", 1, "")
-	fs.StringVarP(&root, "password", "p", "", "")
+	fs.StringVarP(&plantype, "type", "t", "", "")
+	fs.IntVarP(&plan, "plan", "p", -1, "")
+	fs.StringVarP(&template, "image", "i", "", "")
+	fs.StringVarP(&root, "password", "P", "", "")
 
 	fs.Parse(os.Args[1:])
 
@@ -131,8 +140,7 @@ func (cmd *VpsAdd) parseFlag() error {
 	} else if plantype == "windows" {
 		cmd.info.PlanType = PlanTypeWindows
 	} else {
-		fs.Usage()
-		return errors.New(`PlanType(-t) parameter must be "basic" or "windows".`)
+		return errors.New(`PlanType(-t) parameter should be "basic" or "windows".`)
 	}
 
 	if plan == 1 {
@@ -146,16 +154,18 @@ func (cmd *VpsAdd) parseFlag() error {
 	} else if plan == 16 {
 		cmd.info.Plan = Plan16G
 	} else {
-		fs.Usage()
 		return errors.New("Plan(-p) is invalid.")
 	}
 
-	if template == 1 {
+	if template == "centos" {
 		cmd.info.Template = TemplateDefault1
-	} else if template == 2 {
+	} else if template == "wordpress" {
 		cmd.info.Template = TemplateDefault2
+	} else if template == "windows2012" {
+		cmd.info.Template = TemplateDefault3
+	} else if template == "windows2008" {
+		cmd.info.Template = TemplateDefault4
 	} else {
-		fs.Usage()
 		return errors.New("Template Image(-i) is invalid.")
 	}
 
@@ -175,29 +185,30 @@ DESCRIPTION
     Add VPS to your account.
 
 OPTIONS
-    -n: --plan:     VPS Plan.
-                    It allow only numeric(1=1G, 2=2G ... 16=16G).
-
-    -p: --password  Root password(Standard plan only).
-
-    -t, --type:     (Optional) VPS Category.
+    -t, --type:     VPS Type.
                     Is should be "basic" or "windows". If not set, it will set "basic".
 
-    -i: --template: (Optional) Template image number.
-                    If not set, it will set 1.
+    -p: --plan:     VPS Plan.
+                    It allow only numeric(1=1G, 2=2G ... 16=16G).
+
+    -P: --password  Root password.
+                    If the VPS Type is "basic" only.
+
+    -i: --image:    Template image. It should be one of the following.
+                    ("basic" "wordpress" "windows2012" "windows2008")
                      
 Example
     Standard Plan, 2vCPU, 1GB Memory and CentOS6.5.
-        conoha add -t basic -p 1 -i 1
+        conoha add -t basic -p 1 -i centos -P {password}
 
     Standard Plan, 4vCPU, 4GB Memory and CentOS6.5 + nginx + WordPress.
-        conoha add -t basic -p 4 -i 2
+        conoha add -t basic -p 4 -i wordpress -P {password}
 
     Windows Plan, 8vCPU, 8GB Memory and Windows Server 2012 R2
-        conoha add -t windows -p 8 -i 1
+        conoha add -t windows -p 8 -i windows2012
 
     Windows Plan, 16vCPU, 16GB Memory and Windows Server 2008 R2
-        conoha add -t windows -p 16 -i 2
+        conoha add -t windows -p 16 -i windows2008
 `)
 }
 
