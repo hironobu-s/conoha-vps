@@ -1,6 +1,8 @@
 package command
 
 import (
+	"errors"
+	"fmt"
 	"github.com/hironobu-s/conoha-vps/cpanel"
 	"github.com/hironobu-s/conoha-vps/lib"
 	flag "github.com/ogier/pflag"
@@ -25,12 +27,20 @@ func NewSshKey() *SshKey {
 }
 
 func (cmd *SshKey) parseFlag() error {
+	var help bool
 
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
+	fs.Usage = cmd.Usage
 
-	fs.StringVarP(&cmd.destPath, "path", "p", "", `Path of SSH Key File. (default is "conoha-{AccountID}.key"`)
+	fs.BoolVarP(&help, "help", "h", false, "help")
+	fs.StringVarP(&cmd.destPath, "path", "f", "", ``)
 
 	fs.Parse(os.Args[1:])
+
+	if help {
+		fs.Usage()
+		return errors.New("")
+	}
 
 	if cmd.destPath == "" {
 		// デフォルト
@@ -38,6 +48,21 @@ func (cmd *SshKey) parseFlag() error {
 	}
 
 	return nil
+}
+
+func (cd *SshKey) Usage() {
+	fmt.Println(`Usage: conoha ssh-key <file> [OPTIONS]
+
+DESCRIPTION
+    Download and store SSH Private key.
+
+
+OPTIONS
+    -f: --file:  Local filename the private key is stored.
+                 Default is "conoha-{AccountID}.key"
+
+    -h: --help:  Show usage.      
+`)
 }
 
 func (cmd *SshKey) Run() error {
