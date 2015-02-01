@@ -203,7 +203,7 @@ OPTIONS
                     If the VPS Type is "basic" only.
 
     -i: --image:    Template image. It should be one of the following.
-                    ("basic" "wordpress" "windows2012" "windows2008")
+                    ("centos" "wordpress" "windows2012" "windows2008")
                      
 Example
     Standard Plan, 2vCPU, 1GB Memory and CentOS6.5.
