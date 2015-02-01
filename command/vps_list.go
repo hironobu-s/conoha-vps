@@ -5,7 +5,6 @@ package command
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hironobu-s/conoha-vps/cpanel"
@@ -62,7 +61,7 @@ func (cmd *VpsList) Run() error {
 		}
 	}
 
-	format := "%s\t%-" + strconv.Itoa(maxLabel) + "s\t%-" + strconv.Itoa(maxPlan) + "s\t%-15s\t%-20s\t%s\n"
+	format := "%-20s\t%-" + strconv.Itoa(maxLabel) + "s\t%-" + strconv.Itoa(maxPlan) + "s\t%-15s\t%-20s\t%s\n"
 
 	fmt.Printf(
 		format,
@@ -185,11 +184,14 @@ func (r *listResult) Populate(resp *http.Response, doc *goquery.Document) error 
 
 				// VPSのIDを取得
 				href, exists := tds.Eq(j).Find("A").Attr("href")
-				if !exists {
-					return errors.New(`Nothing Attribute "href". Could not detect the VmID.`)
+				if exists {
+					sp := strings.Split(href, "/")
+					vm.Id = sp[2]
+				} else {
+					// VPSの作成待ちの場合はIDが存在しない場合がある
+					vm.Id = ""
+					//return errors.New(`Nothing Attribute "href". Could not detect the VmID.`)
 				}
-				sp := strings.Split(href, "/")
-				vm.Id = sp[2]
 
 			case 3:
 				vm.ServiceStatus = value
@@ -232,6 +234,10 @@ type vmStatusResult struct {
 }
 
 func (cmd *Vps) GetVMStatus(id string) (status ServerStatus, err error) {
+
+	if id == "" {
+		return StatusUnknown, nil
+	}
 
 	r := &vmStatusResult{}
 	f := &vmStatusRequest{}
