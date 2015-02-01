@@ -20,6 +20,7 @@ import (
 
 type VpsList struct {
 	*Vps
+	idOnly  bool
 	verbose bool
 }
 
@@ -36,6 +37,7 @@ func (cmd *VpsList) parseFlag() error {
 	fs.Usage = cmd.Usage
 
 	fs.BoolVarP(&help, "help", "h", false, "help")
+	fs.BoolVarP(&cmd.idOnly, "id-only", "i", false, "id-only")
 	fs.BoolVarP(&cmd.verbose, "Verbose", "v", false, "Verbose output.")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
@@ -58,8 +60,10 @@ DESCRIPTION
     List VPS status.
 
 OPTIONS
-    -h: --help:     Show usage.      
-    -v: --verbose:  Verbose output(Including the server status).
+    -h: --help:     Show usage.
+    -i: --id-only:  Show VPS-ID only.
+    -v: --verbose:  Verbose output.
+                    Including the server status, but slowly.
 `)
 }
 
@@ -76,38 +80,47 @@ func (cmd *VpsList) Run() error {
 		return err
 	}
 
-	var maxPlan int = 10
-	var maxLabel int = 10
-	for _, vm := range servers {
-		if len(vm.Label) > maxLabel {
-			maxLabel = len(vm.Label)
+	if cmd.idOnly {
+		format := "%-20s\n"
+		for _, vm := range servers {
+			fmt.Printf(format, vm.Id)
 		}
-		if len(vm.Plan) > maxPlan {
-			maxPlan = len(vm.Plan)
+
+	} else {
+
+		var maxPlan int = 10
+		var maxLabel int = 10
+		for _, vm := range servers {
+			if len(vm.Label) > maxLabel {
+				maxLabel = len(vm.Label)
+			}
+			if len(vm.Plan) > maxPlan {
+				maxPlan = len(vm.Plan)
+			}
 		}
-	}
 
-	format := "%-20s\t%-" + strconv.Itoa(maxLabel) + "s\t%-" + strconv.Itoa(maxPlan) + "s\t%-15s\t%-20s\t%s\n"
+		format := "%-20s\t%-" + strconv.Itoa(maxLabel) + "s\t%-" + strconv.Itoa(maxPlan) + "s\t%-15s\t%-20s\t%s\n"
 
-	fmt.Printf(
-		format,
-		"VPS ID           ",
-		"Label",
-		"Plan",
-		"Server Status",
-		"Service Status",
-		"CreatedAt",
-	)
-	for _, vm := range servers {
 		fmt.Printf(
 			format,
-			vm.Id,
-			vm.Label,
-			vm.Plan,
-			vm.ServerStatus,
-			vm.ServiceStatus,
-			vm.CreatedAt.Format("2006/01/02 15:04 MST"),
+			"VPS ID           ",
+			"Label",
+			"Plan",
+			"Server Status",
+			"Service Status",
+			"CreatedAt",
 		)
+		for _, vm := range servers {
+			fmt.Printf(
+				format,
+				vm.Id,
+				vm.Label,
+				vm.Plan,
+				vm.ServerStatus,
+				vm.ServiceStatus,
+				vm.CreatedAt.Format("2006/01/02 15:04 MST"),
+			)
+		}
 	}
 	return nil
 }
