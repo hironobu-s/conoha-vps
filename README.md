@@ -27,7 +27,7 @@ CentOS系の場合、以下のようにします。DebianやUbuntuはyumをapt�
 
 ```
 # Goの環境をインストールします。
-# また、依存ライブラリをgo getするのにMercurialが必要です。
+# また、依存ライブラリをgo getするのにMercurial(hg)が必要です。
 yum install go hg
 
 # GOPATHを設定します
@@ -59,9 +59,19 @@ VPS一覧を取得します
 $ conoha list
 ```
 
+
 (つづく)
 
 ## 使い方
+
+コマンドに -h を付けるとヘルプが表示されます。
+```
+$ conoha -h
+```
+
+```
+$ conoha stat -h
+```
 
 (これから書く)
 
