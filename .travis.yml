@@ -22,5 +22,5 @@ deploy:
   skip_cleanup: true
   all_branches: true
   on:
-    tags: true
+#    tags: true
     repo: hironobu-s/conoha-vps
