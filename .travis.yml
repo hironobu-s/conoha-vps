@@ -20,7 +20,7 @@ deploy:
     - bin/linux/conoha.gz
 
   skip_cleanup: true
-  all_branches: true
   on:
 #    tags: true
     repo: hironobu-s/conoha-vps
+    all_branches: true
