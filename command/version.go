@@ -22,6 +22,6 @@ func (cmd *Version) Usage() {
 }
 
 func (cmd *Version) Run() error {
-	println(lib.VERSION)
+	println(lib.Version)
 	return nil
 }
