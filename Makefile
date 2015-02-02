@@ -12,11 +12,11 @@ windows:
 
 darwin:
 	GOOS=$@ GOARCH=$(GOARCH) go build $(GOFLAGS) -o $(BINDIR)/$@/$(NAME)
-	cd bin/$@; gzip $(NAME)
+	cd bin/$@; zip $(NAME)-osx.zip $(NAME)
 
 linux:
 	GOOS=$@ GOARCH=$(GOARCH) go build $(GOFLAGS) -o $(BINDIR)/$@/$(NAME)
-	cd bin/$@; gzip $(NAME)
+	cd bin/$@; gzip $(NAME) > $(NAME)-linux.gz
 
 clean:
 	rm -rf $(BINDIR)
