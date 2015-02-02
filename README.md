@@ -1,4 +1,7 @@
+
 # CLI-tool for ConoHa VPS.
+
+[![Build Status](https://travis-ci.org/hironobu-s/conoha-vps.svg?branch=master)](https://travis-ci.org/hironobu-s/conoha-vps)
 
 [ConoHa VPS](https://www.conoha.jp/)を操作するためのCLIツールです。
 
