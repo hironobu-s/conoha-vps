@@ -6,6 +6,8 @@ before_install:
   - go get github.com/Sirupsen/logrus
   - go get github.com/howeyc/gopass
   - go get github.com/ogier/pflag
+  - go get github.com/mitchellh/gox
+  - gox -build-toolchain -osarch="darwin/amd64 linux/amd64 windows/amd64"
 
 script: make
 deploy:
