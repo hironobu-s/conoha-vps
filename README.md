@@ -31,20 +31,20 @@ ConoHa VPSのコントロールパネルは非常に使いやすく、VPSの操�
 ターミナルなどから以下のコマンドを実行します。
 
 ```bash
-L=/usr/local/bin/conoha-ojs && curl -sL https://github.com/hironobu-s/conoha-vps/releases/download/v20150204.1/conoha-osx.amd64.gz | zcat > $L && chmod +x $L
+L=/usr/local/bin/conoha && curl -sL https://github.com/hironobu-s/conoha-vps/releases/download/v20150204.1/conoha-osx.amd64.gz | zcat > $L && chmod +x $L
 ```
 
-アンインストールする場合は/usr/local/bin/conoha-ojsを削除してください。
+アンインストールする場合は/usr/local/bin/conohaを削除してください。
 
 ### Linux
 
-ターミナルなどから以下のコマンドを実行します。/usr/local/binにインストールされるので、root権限が必要です。他のディレクトリにインストールする場合はL=/usr/local/bin/conoha-ojsの部分を適宜書き換えてください。
+ターミナルなどから以下のコマンドを実行します。/usr/local/binにインストールされるので、root権限が必要です。他のディレクトリにインストールする場合はL=/usr/local/bin/conohaの部分を適宜書き換えてください。
 
 ```bash
-L=/usr/local/bin/conoha-ojs && curl -sL https://github.com/hironobu-s/conoha-vps/releases/download/v20150204.1/conoha-linux.amd64.gz | zcat > $L && chmod +x $L
+L=/usr/local/bin/conoha && curl -sL https://github.com/hironobu-s/conoha-vps/releases/download/v20150204.1/conoha-linux.amd64.gz | zcat > $L && chmod +x $L
 ```
 
-アンインストールする場合は/usr/local/bin/conoha-ojsを削除してください。
+アンインストールする場合は/usr/local/bin/conohaを削除してください。
 
 ### Windows
 
