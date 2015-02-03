@@ -13,9 +13,9 @@ deploy:
   api_key:
     secure: Z55l9blwOv870mSOatQIKDkKL8UMBfuvTOj+RYyPC80W+IoAspomgS9yK2dHwcWoR2n2M5WwCLRcKYqQu5UHpqeGr4LnmlhyeWoA0fbRqYq+4IRG/xC6qfp99r9NTKjW9GHz7ThRiJBTrYbVve5Rc8wnD9SmAr5zSXufMseo/KU=
   file:
-    - bin/windows/conoha.zip
-    - bin/darwin/conoha-osx.zip
-    - bin/linux/conoha-linux.gz
+    - bin/windows/conoha.amd64.zip
+    - bin/darwin/conoha-osx.amd64.gz
+    - bin/linux/conoha-linux.amd64.gz
 
   skip_cleanup: true
   on:
