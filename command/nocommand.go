@@ -25,14 +25,15 @@ DESCRIPTION
     A CLI-Tool for ConoHa VPS.
 
 COMMANDS
-    login    Authenticate an account.
-    list     List VPS.
     add      Add VPS.
+    list     List VPS.
+    login    Authenticate an account.
+    logout   Remove an authenticate file(~/.conoha-vps).
     remove   Remove VPS.
     ssh-key  Download and store SSH Private key.
     ssh      Login to VPS via SSH.
-    logout   Remove an authenticate file(~/.conoha-vps).
-    version  Print version.
+    stat     Display VPS information.
+    version  Display version.
 `)
 }
 
