@@ -3,6 +3,7 @@ package command
 import (
 	"errors"
 	"fmt"
+	"github.com/hironobu-s/conoha-vps/lib"
 	flag "github.com/ogier/pflag"
 	"os"
 	"os/exec"
@@ -95,6 +96,9 @@ OPTIONS
 }
 
 func (cmd *Ssh) Run() error {
+
+	log := lib.GetLogInstance()
+
 	var err error
 	if err = cmd.parseFlag(); err != nil {
 		return err
@@ -105,6 +109,12 @@ func (cmd *Ssh) Run() error {
 	if vm == nil {
 		msg := fmt.Sprintf("VPS not found(id=%s).", cmd.vmId)
 		return errors.New(msg)
+	}
+
+	// Windwsプランの場合は何もしない
+	if strings.Index(vm.Plan, "Windows") >= 0 {
+		log.Infof("ID=%s. Windows plan is not supported ssh connect.", vm.Id)
+		return nil
 	}
 
 	vpsStat := NewVpsStat()
