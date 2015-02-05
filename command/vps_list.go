@@ -63,7 +63,7 @@ OPTIONS
     -h: --help:     Show usage.
     -i: --id-only:  Show VPS-ID only.
     -v: --verbose:  Verbose output.
-                    Including the server status, but slowly.
+                    It will be included the server status, but slowly.
 `)
 }
 
