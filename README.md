@@ -171,6 +171,29 @@ Windowsプランの16GBでWindows Server 2008を追加する場合
 $ conoha add -t windows -p 16 -i windows2008
 ```
 
+### label
+
+VPSのラベルを変更します。
+ラベルは自由に付けることができ、VPSを識別するのに役立ちます。listコマンドやVPS選択のプロンプトでも表示されます。
+
+* -l, --label: ラベル名を指定します。このパラメータは必須です。
+
+```
+$ conoha label -l "Personal Web."
+[1] CentOS7
+[2] UbuntuDesktop
+[3] WindowsServer2012
+Please select VPS no. [1-3]: 1
+INFO[0006] VPS Label was changed to "Personal Web."
+$
+```
+
+VPS IDを直接指定する場合は第二引数に指定します。
+
+```
+$ conoha label <VPS-ID> -l "Personal Web."
+```
+
 ### list
 
 VPSの一覧を表示します。
