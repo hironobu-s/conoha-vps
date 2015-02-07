@@ -86,7 +86,7 @@ DESCRIPTION
 
     It may not work on Windows.
 
-<VPS-ID> VPS-ID to get the stats. It may be confirmed by LIST subcommand.
+<VPS-ID> (Optional)VPS-ID to get the stats. It may be confirmed by LIST subcommand.
          If not set, It will be selected from the list menu.
 
 OPTIONS
