@@ -53,6 +53,9 @@ type VpsAddInformation struct {
 	// rootパスワード
 	RootPassword string
 
+	// SSHキーの番号
+	SshKeyNo int
+
 	// ----------
 
 	// VpsPlan構造体
@@ -116,7 +119,7 @@ func NewVpsAdd() *VpsAdd {
 func (cmd *VpsAdd) parseFlag() error {
 	var help bool
 	var plantype, template, root string
-	var plan int
+	var plan, sshKeyNo int
 	var err error
 
 	fs := flag.NewFlagSet("conoha-vps", flag.ContinueOnError)
@@ -127,6 +130,7 @@ func (cmd *VpsAdd) parseFlag() error {
 	fs.IntVarP(&plan, "plan", "p", -1, "")
 	fs.StringVarP(&template, "image", "i", "", "")
 	fs.StringVarP(&root, "password", "P", "", "")
+	fs.IntVarP(&sshKeyNo, "sshkey-no", "s", 1, ``)
 
 	if err = fs.Parse(os.Args[1:]); err != nil {
 		return err
@@ -177,6 +181,7 @@ func (cmd *VpsAdd) parseFlag() error {
 	}
 
 	cmd.info.RootPassword = root
+	cmd.info.SshKeyNo = sshKeyNo
 
 	if err = cmd.info.Validate(); err != nil {
 		fs.Usage()
@@ -204,6 +209,9 @@ OPTIONS
 
     -i: --image:    Template image. It should be one of the following.
                     ("centos" "wordpress" "windows2012" "windows2008")
+
+    -s: --sshkey-no:  SSH Key number. Default is 1.
+                      If the number of keys one, It wil be ignored.
                      
 Example
     Standard Plan, 2vCPU, 1GB Memory and CentOS6.5.
@@ -289,9 +297,9 @@ func (r *addFormResult) Populate(resp *http.Response, doc *goquery.Document) err
 	r.info.VpsPlan = plans[r.info.Plan-1]
 
 	// SSHキーIDを決定する
-	r.info.SshKeyId = r.sshKeyId(doc)
+	r.info.SshKeyId, err = r.sshKeyId(doc)
 
-	return nil
+	return err
 }
 
 // VPS追加フォームのHTMLからプラン一覧を作る
@@ -340,9 +348,15 @@ func (r *addFormResult) detectPlans(doc *goquery.Document, planType int) (plans 
 }
 
 // VPS追加フォームのHTMLからSSH公開鍵のIDを取得する
-func (r *addFormResult) sshKeyId(doc *goquery.Document) string {
-	sshKeyId, _ := doc.Find("#ContentPlaceHolder1_ContentPlaceHolder1_rbKey_0").Attr("value")
-	return sshKeyId
+func (r *addFormResult) sshKeyId(doc *goquery.Document) (string, error) {
+	no := r.info.SshKeyNo - 1
+	sshKeyId, _ := doc.Find("#ContentPlaceHolder1_ContentPlaceHolder1_rbKey_" + strconv.Itoa(no)).Attr("value")
+
+	if sshKeyId != "" {
+		return sshKeyId, nil
+	} else {
+		return "", errors.New("SSH key not found.")
+	}
 }
 
 // ---------------------- confirm --------------------
