@@ -26,6 +26,7 @@ DESCRIPTION
 
 COMMANDS
     add      Add VPS.
+    label    Change VPS label.
     list     List VPS.
     login    Authenticate an account.
     logout   Remove an authenticate file(~/.conoha-vps).
