@@ -213,7 +213,7 @@ OPTIONS
     -s: --sshkey-no:  SSH Key number. Default is 1.
                       If the number of keys one, It wil be ignored.
                      
-Example
+EXAMPLE
     Standard Plan, 2vCPU, 1GB Memory and CentOS6.5.
         conoha add -t basic -p 1 -i centos -P {password}
 
