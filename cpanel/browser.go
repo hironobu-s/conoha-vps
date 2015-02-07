@@ -62,9 +62,6 @@ func (act *Action) Run(bi *BrowserInfo) (err error) {
 	}
 	defer resp.Body.Close()
 
-	//_, _ = ioutil.ReadAll(resp.Body)
-	//println(string(body))
-
 	// dump, _ := httputil.DumpRequest(req, true)
 	// println(string(dump))
 
