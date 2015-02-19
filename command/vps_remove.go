@@ -72,7 +72,7 @@ DESCRIPTION
 
 OPTIONS
     -h: --help:          Show usage.
-    -f: --force-remove:  Attempt to remove the VPS without prompting for comfirmation .
+    -f: --force-remove:  Attempt to remove the VPS without prompting for confirmation.
 `)
 }
 
