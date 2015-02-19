@@ -33,6 +33,8 @@ func main() {
 		cmd = command.NewVpsRemove()
 	case "label":
 		cmd = command.NewVpsLabel()
+	case "power":
+		cmd = command.NewVpsPower()
 	case "ssh-key":
 		cmd = command.NewSshKey()
 	case "ssh":

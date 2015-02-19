@@ -30,6 +30,7 @@ COMMANDS
     list     List VPS.
     login    Authenticate an account.
     logout   Remove an authenticate file(~/.conoha-vps).
+    power    Send power-command to VPS.
     remove   Remove VPS.
     ssh-key  Download and store SSH Private key.
     ssh      Login to VPS via SSH.

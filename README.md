@@ -22,6 +22,7 @@ ConoHa VPSのコントロールパネルは非常に使いやすく、VPSの操�
 * VPSの削除
 * SSH秘密鍵のダウンロード
 * VPSへのSSH接続
+* VPSの起動、再起動、シャットダウン、強制停止
 
 
 ## インストール
@@ -80,14 +81,17 @@ DESCRIPTION
     A CLI-Tool for ConoHa VPS.
 
 COMMANDS
-    login    Authenticate an account.
-    list     List VPS.
     add      Add VPS.
+    label    Change VPS label.
+    list     List VPS.
+    login    Authenticate an account.
+    logout   Remove an authenticate file(~/.conoha-vps).
+    power    Send power-command to VPS.
     remove   Remove VPS.
     ssh-key  Download and store SSH Private key.
     ssh      Login to VPS via SSH.
-    logout   Remove an authenticate file(~/.conoha-vps).
-    version  Print version.
+    stat     Display VPS information.
+    version  Display version.
 ```
 
 まずはlistコマンドを実行してみましょう。VPSの一覧が表示されます。
@@ -235,6 +239,27 @@ $
 
 ```
 $ conoha logout
+```
+
+
+### power
+
+VPSの電源を操作するコマンドを送信します。つまり起動、再起動、シャットダウン、強制停止です。起動コマンドはVPSが停止していないと送信できません。また、他のコマンドはVPSが稼働していないと送信できません。
+
+[オプション]
+
+* -c, --command:       送信するコマンドを指定します。"boot" "reboot" "shutdown" "stop"のどれかを指定します。
+* -f, --force-remove:  確認プロンプトを表示せず直ちにコマンドを送信します。
+
+```
+$ conoha power -c boot
+[1] CentOS7
+[2] Ubuntu Desktop
+[3] WindowsServer2012
+Please select VPS no. [1-3]: 1
+Send "Boot" command to VPS(Label=CentOS7). Are you sure?
+[y/N]: y
+INFO[0015] "Boot" command was sent to VPS(id=********).
 ```
 
 
