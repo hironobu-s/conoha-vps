@@ -249,7 +249,7 @@ VPSの電源を操作するコマンドを送信します。つまり起動、�
 [オプション]
 
 * -c, --command:       送信するコマンドを指定します。"boot" "reboot" "shutdown" "stop"のどれかを指定します。
-* -f, --force-remove:  確認プロンプトを表示せず直ちにコマンドを送信します。
+* -f, --force-send:  確認プロンプトを表示せず直ちにコマンドを送信します。
 
 ```
 $ conoha power -c boot
