@@ -32,7 +32,7 @@ ConoHa VPSのコントロールパネルは非常に使いやすく、VPSの操�
 ターミナルなどから以下のコマンドを実行します。
 
 ```bash
-L=/usr/local/bin/conoha && curl -sL https://github.com/hironobu-s/conoha-vps/releases/download/v20150207.1/conoha-osx.amd64.gz | zcat > $L && chmod +x $L
+L=/usr/local/bin/conoha && curl -sL https://github.com/hironobu-s/conoha-vps/releases/download/v20150220.1/conoha-osx.amd64.gz | zcat > $L && chmod +x $L
 ```
 
 アンインストールする場合は/usr/local/bin/conohaを削除してください。
@@ -42,14 +42,14 @@ L=/usr/local/bin/conoha && curl -sL https://github.com/hironobu-s/conoha-vps/rel
 ターミナルなどから以下のコマンドを実行します。/usr/local/binにインストールされるので、root権限が必要です。他のディレクトリにインストールする場合はL=/usr/local/bin/conohaの部分を適宜書き換えてください。
 
 ```bash
-L=/usr/local/bin/conoha && curl -sL https://github.com/hironobu-s/conoha-vps/releases/download/v20150207.1/conoha-linux.amd64.gz | zcat > $L && chmod +x $L
+L=/usr/local/bin/conoha && curl -sL https://github.com/hironobu-s/conoha-vps/releases/download/v20150220.1/conoha-linux.amd64.gz | zcat > $L && chmod +x $L
 ```
 
 アンインストールする場合は/usr/local/bin/conohaを削除してください。
 
 ### Windows
 
-[ZIPファイル](https://github.com/hironobu-s/conoha-vps/releases/download/v20150207.1/conoha.amd64.zip)をダウンロードして、適当なフォルダに展開します。
+[ZIPファイル](https://github.com/hironobu-s/conoha-vps/releases/download/v20150220.1/conoha.amd64.zip)をダウンロードして、適当なフォルダに展開します。
 
 実行する場合は、コマンドプロンプトから実行してください(ファイル名をダブルクリックしても何も起きません)。
 
