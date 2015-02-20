@@ -98,7 +98,13 @@ func (cmd *VpsStat) Run() error {
 	lines = append(lines, fmt.Sprintf(format, "Service ID", vm.ServiceId))
 	lines = append(lines, fmt.Sprintf(format, "Plan", vm.Plan))
 	lines = append(lines, fmt.Sprintf(format, "Created At", vm.CreatedAt.Format(time.RFC3339)))
-	lines = append(lines, fmt.Sprintf(format, "Delete Date", vm.DeleteDate))
+
+	if !vm.DeleteDate.IsZero() {
+		lines = append(lines, fmt.Sprintf(format, "Delete Date", vm.DeleteDate))
+	} else {
+		lines = append(lines, fmt.Sprintf(format, "Delete Date", "-"))
+	}
+
 	lines = append(lines, fmt.Sprintf(format, "Payment Span", vm.PaymentSpan))
 	lines = append(lines, fmt.Sprintf(format, "CPU", vm.NumCpuCore))
 	lines = append(lines, fmt.Sprintf(format, "Memory", vm.Memory))
