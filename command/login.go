@@ -138,7 +138,7 @@ func (cmd *Login) inputAccountInfo() error {
 	var n int
 	var err error
 
-	println("Please input ConoHa accounts.")
+	println("Please input ConoHa account.")
 	print("ConoHa Account: ")
 	n, err = fmt.Scanf("%s", &cmd.account)
 	if n != 1 || err != nil {
