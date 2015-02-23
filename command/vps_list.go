@@ -15,6 +15,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -164,13 +165,23 @@ func (cmd *VpsList) List(deep bool) (servers []*Vm, err error) {
 
 	// サーバーステータスを取得する
 	if deep {
+		wait := new(sync.WaitGroup)
+
 		for _, vm := range r.servers {
-			status, err := cmd.GetVMStatus(vm.Id)
-			if err != nil {
-				return r.servers, err
-			}
-			vm.ServerStatus = status
+
+			wait.Add(1)
+
+			go func(vm *Vm) {
+				vm.ServerStatus, err = cmd.GetVMStatus(vm.Id)
+				if err != nil {
+					vm.ServerStatus = StatusUnknown
+				}
+				wait.Done()
+			}(vm)
+
+			wait.Wait()
 		}
+
 	} else {
 		for _, vm := range servers {
 			vm.ServerStatus = StatusNoinformation
