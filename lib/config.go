@@ -2,8 +2,8 @@ package lib
 
 import (
 	"encoding/json"
+	"github.com/mitchellh/go-homedir"
 	"os"
-	"os/user"
 	"path/filepath"
 )
 
@@ -19,21 +19,20 @@ type Config struct {
 	Sid      string
 }
 
-func (c *Config) ConfigFilePath() string {
-	user, err := user.Current()
-	if err == nil {
-		path := user.HomeDir + string(filepath.Separator) + CONFIGFILE
-		return filepath.Clean(path)
-	} else {
-		// ここに来ることはなさそう
-		panic(err)
+func (c *Config) ConfigFilePath() (string, error) {
+	homedir, err := homedir.Dir()
+	if err != nil {
+		return "", err
 	}
+
+	return homedir + string(filepath.Separator) + CONFIGFILE, nil
 }
 
 func (c *Config) Remove() {
 	var err error
 
-	path := c.ConfigFilePath()
+	path, _ := c.ConfigFilePath()
+
 	if _, err = os.Stat(path); err != nil {
 		// ファイルが存在しない場合は何もしない
 		return
@@ -45,7 +44,7 @@ func (c *Config) Remove() {
 func (c *Config) Read() {
 	var err error
 
-	path := c.ConfigFilePath()
+	path, _ := c.ConfigFilePath()
 
 	if _, err = os.Stat(path); err != nil {
 		// ファイルが存在しない場合は何もしない
@@ -66,7 +65,12 @@ func (c *Config) Read() {
 }
 
 func (c *Config) Write() error {
-	path := c.ConfigFilePath()
+	var err error
+	path, err := c.ConfigFilePath()
+	if err != nil {
+		return err
+	}
+
 	file, err := os.Create(path)
 	if err != nil {
 		return err
