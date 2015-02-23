@@ -25,8 +25,8 @@ func (c *Config) ConfigFilePath() string {
 		path := user.HomeDir + string(filepath.Separator) + CONFIGFILE
 		return filepath.Clean(path)
 	} else {
-		// ここに来ることはなさそうだが、そのときはカレントディレクトリに作成する
-		return CONFIGFILE
+		// ここに来ることはなさそう
+		panic(err)
 	}
 }
 
