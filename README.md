@@ -96,7 +96,7 @@ COMMANDS
 
 まずはlistコマンドを実行してみましょう。VPSの一覧が表示されます。
 ```
-$conoha list -v
+$conoha list
 VPS ID                  Label                   Plan                            Server Status   Service Status          CreatedAt
 f648a6646b7e7d91        CentOS7                 8GB Memory                      Running         In operation            2015/01/27 13:15 JST
 a2ae45355615d641        UbuntuDesktop           4GB Memory                      Offline         In operation            2014/12/11 16:59 JST
@@ -201,13 +201,12 @@ $ conoha label <VPS-ID> -l "Personal Web."
 ### list
 
 VPSの一覧を表示します。
-そのまま実行するとServer Status列が空欄になります。これはオプションで-vを付けると取得されます。
 
-* -v, --verbose: ServerStatusを取得します。その代わり実行に少し時間がかかります。
+* -v, --verbose: ServerStatusを取得します。デフォルトでOnですが実行に少し時間がかかります。
 * -i, --id-only: VPS-ID列のみを表示します。シェルスクリプトで使うときに便利です。
 
 ```
-$ conoha list -v
+$ conoha list
 VPS ID                  Label                   Plan                            Server Status   Service Status          CreatedAt
 f648a6646b7e7d91        CentOS7                 8GB Memory                      Running         In operation            2015/01/27 13:15 JST
 a2ae45355615d641        UbuntuDesktop           4GB Memory                      Offline         In operation            2014/12/11 16:59 JST
