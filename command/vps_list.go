@@ -15,6 +15,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -38,7 +39,7 @@ func (cmd *VpsList) parseFlag() error {
 
 	fs.BoolVarP(&help, "help", "h", false, "help")
 	fs.BoolVarP(&cmd.idOnly, "id-only", "i", false, "id-only")
-	fs.BoolVarP(&cmd.verbose, "Verbose", "v", false, "Verbose output.")
+	fs.BoolVarP(&cmd.verbose, "Verbose", "v", true, "Verbose output.")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		fs.Usage()
@@ -62,7 +63,7 @@ DESCRIPTION
 OPTIONS
     -h: --help:     Show usage.
     -i: --id-only:  Show VPS-ID only.
-    -v: --verbose:  Verbose output.
+    -v: --verbose:  Verbose output(default is true).
                     It will be included the server status, but slowly.
 `)
 }
@@ -164,13 +165,23 @@ func (cmd *VpsList) List(deep bool) (servers []*Vm, err error) {
 
 	// サーバーステータスを取得する
 	if deep {
+		wait := new(sync.WaitGroup)
+
 		for _, vm := range r.servers {
-			status, err := cmd.GetVMStatus(vm.Id)
-			if err != nil {
-				return r.servers, err
-			}
-			vm.ServerStatus = status
+
+			wait.Add(1)
+
+			go func(vm *Vm) {
+				vm.ServerStatus, err = cmd.GetVMStatus(vm.Id)
+				if err != nil {
+					vm.ServerStatus = StatusUnknown
+				}
+				wait.Done()
+			}(vm)
+
+			wait.Wait()
 		}
+
 	} else {
 		for _, vm := range servers {
 			vm.ServerStatus = StatusNoinformation
