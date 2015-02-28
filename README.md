@@ -359,13 +359,13 @@ export GOPATH=$HOME/go
 go get github.com/hironobu-s/conoha-vps
 
 # ビルド
-cd $GOPATH/src/github.com/hironobu-s/conoha-vps
-go build -o conoha
+make
 
-# 実行
-./conoha version
+# 実行(binディレクトリ内にアーキテクチャ事にバイナリが作成されています
+./bin/darwin/conoha
+
 ```
-
+	
 ## TODO
 
 * OS再インストールのサポート
