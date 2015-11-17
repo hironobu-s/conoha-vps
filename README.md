@@ -3,6 +3,14 @@
 
 [![Build Status](https://travis-ci.org/hironobu-s/conoha-vps.svg?branch=master)](https://travis-ci.org/hironobu-s/conoha-vps)
 
+------
+
+**ConoHa側の変更により、このツールはすでに使用できません**
+
+**This tools is obsolete and will not update.**
+
+-----
+
 [ConoHa VPS](https://www.conoha.jp/)を操作するためのCLIツールです。
 
 ConoHa VPSのコントロールパネルは非常に使いやすく、VPSの操作に関して困ることはありません。
